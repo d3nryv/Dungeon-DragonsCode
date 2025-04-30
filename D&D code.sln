@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35514.174 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "D&D code", "D&D code\D&D code.csproj", "{5B915ED8-88B8-49E7-8FAA-7FA7861EFD74}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B915ED8-88B8-49E7-8FAA-7FA7861EFD74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B915ED8-88B8-49E7-8FAA-7FA7861EFD74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B915ED8-88B8-49E7-8FAA-7FA7861EFD74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B915ED8-88B8-49E7-8FAA-7FA7861EFD74}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
