@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace D_D_code
 {
@@ -38,6 +40,52 @@ namespace D_D_code
             heroInteligence = intrInteligence;
             heroSpeed = intSpeed;
 
+            // Modificadores por raza
+            if (heroRace == "Humano")
+            {
+                heroHP = heroHP + 1;
+                heroInteligence = heroInteligence + 1;
+            }
+            else
+            {
+                if (heroRace == "Elfo")
+                {
+                    heroInteligence = heroInteligence + 2;
+                    heroSpeed = heroSpeed + 1;
+                }
+                else
+                {
+                    if (heroRace == "Orco")
+                    {
+                        heroStrength = heroStrength + 2;
+                        heroConstitution = heroConstitution + 1;
+                    }
+                }
+            }
+
+            // Modificadores por clase
+            if (heroClass == "Guerrero")
+            {
+                heroStrength = heroStrength + 2;
+                heroConstitution = heroConstitution + 1;
+            }
+            else
+            {
+                if (heroClass == "Maga")
+                {
+                    heroInteligence = heroInteligence + 2;
+                    heroHP = heroHP + 1;
+                }
+                else
+                {
+                    if (heroClass == "Sanador")
+                    {
+                        heroConstitution = heroConstitution + 2;
+                        heroInteligence = heroInteligence + 1;
+                    }
+                }
+            }
+
             heroActualHP = heroHP;
             heroLvl = 1;
             heroXP = 0;
@@ -45,117 +93,66 @@ namespace D_D_code
         }
 
         // Setters
-        public void SetName(string newName)
-        {
-            heroName = newName;
-        }
-        public void SetTitle(string newTitle)
-        {
-            heroTitle = newTitle;
-        }
-        public void SetRace(string newRace)
-        {
-            heroRace = newRace;
-        }
-        public void SetClass(string newClass)
-        {
-            heroClass = newClass;
-        }
-        public void SetLore(string newLore)
-        {
-            heroLore = newLore;
-        }
-        public void SetStrength(int newStrength)
-        {
-            heroStrength = newStrength;
-        }
-        public void SetConstitution(int newConstitution)
-        {
-            heroConstitution = newConstitution;
-        }
-        public void SetHP(int newHP)
-        {
-            heroHP = newHP;
-        }
-        public void SetInteligence(int newInteligence)
-        {
-            heroInteligence = newInteligence;
-        }
-        public void SetSpeed(int newSpeed)
-        {
-            heroSpeed = newSpeed;
-        }
-        public void SetActualHP(int newActualHP)
-        {
-            heroActualHP = newActualHP;
-        }
-        public void SetLvl(int newLvl)
-        {
-            heroLvl = newLvl;
-        }
-        public void SetXP(int newXP)
-        {
-            heroXP = newXP;
-        }
+        public void SetName(string newName) { heroName = newName; }
+        public void SetTitle(string newTitle) { heroTitle = newTitle; }
+        public void SetRace(string newRace) { heroRace = newRace; }
+        public void SetClass(string newClass) { heroClass = newClass; }
+        public void SetLore(string newLore) { heroLore = newLore; }
+        public void SetStrength(int newStrength) { heroStrength = newStrength; }
+        public void SetConstitution(int newConstitution) { heroConstitution = newConstitution; }
+        public void SetHP(int newHP) { heroHP = newHP; }
+        public void SetInteligence(int newInteligence) { heroInteligence = newInteligence; }
+        public void SetSpeed(int newSpeed) { heroSpeed = newSpeed; }
+        public void SetActualHP(int newActualHP) { heroActualHP = newActualHP; }
+        public void SetLvl(int newLvl) { heroLvl = newLvl; }
+        public void SetXP(int newXP) { heroXP = newXP; }
 
         // Getters
-        public string GetName()
+        public string GetName() { return heroName; }
+        public string GetTitle() { return heroTitle; }
+        public string GetRace() { return heroRace; }
+        public string GetClass() { return heroClass; }
+        public string GetLore() { return heroLore; }
+        public DateTime GetReclutationTime() { return heroReclutationTime; }
+        public int GetStrength() { return heroStrength; }
+        public int GetConstitution() { return heroConstitution; }
+        public int GetHP() { return heroHP; }
+        public int GetInteligence() { return heroInteligence; }
+        public int GetVelocity() { return heroSpeed; }
+        public int GetActualLife() { return heroActualHP; }
+        public int GetLvl() { return heroLvl; }
+        public int GetXP() { return heroXP; }
+
+        //Modificators
+        public void AddXP(int gainedXP)
         {
-            return heroName;
-        }
-        public string GetTitle()
-        {
-            return heroTitle;
-        }
-        public string GetRace()
-        {
-            return heroRace;
-        }
-        public string GetClass()
-        {
-            return heroClass;
-        }
-        public string GetLore()
-        {
-            return heroLore;
-        }
-        public DateTime GetReclutationTime()
-        {
-            return heroReclutationTime;
-        }
-        public int GetStrength()
-        {
-            return heroStrength;
-        }
-        public int GetConstitution()
-        {
-            return heroConstitution;
-        }
-        public int GetHP()
-        {
-            return heroHP;
-        }
-        public int GetInteligence()
-        {
-            return heroInteligence;
-        }
-        public int GetVelocity()
-        {
-            return heroSpeed;
-        }
-        public int GetActualLife()
-        {
-            return heroActualHP;
-        }
-        public int GetLvl()
-        {
-            return heroLvl;
-        }
-        public int GetXP()
-        {
-            return heroXP;
+            heroXP = heroXP + gainedXP;
+
+            if (heroXP >= 100)
+            {
+                heroXP = heroXP - 100;
+                heroLvl = heroLvl + 1;
+
+                int oldHP = heroHP;
+                int oldStrength = heroStrength;
+                int oldSpeed = heroSpeed;
+
+                heroHP = heroHP + 1;
+                heroStrength = heroStrength + 2;
+                heroSpeed = heroSpeed + 1;
+                heroActualHP = heroHP;
+
+                Console.WriteLine("¡" + heroName + " ha subido al nivel " + heroLvl + "!");
+                Console.WriteLine("HP -> " + oldHP + " + 1");
+                Console.WriteLine("Strength -> " + oldStrength + " + 2");
+                Console.WriteLine("Speed -> " + oldSpeed + " + 1");
+                Console.WriteLine("Constitution -> " + heroConstitution);
+                Console.WriteLine("Intelligence -> " + heroInteligence);
+                Console.WriteLine("");
+            }
         }
     }
+
     class Enemy
     {
         // Atributos
@@ -259,6 +256,20 @@ namespace D_D_code
             return inmunidadMagica;
         }
     }
+    class CombatAction
+    {
+        public Hero hero;
+        public bool attacked = false;
+        public bool killed = false;
+        public bool couldHaveKilledButMissed = false;
+        public int xpExtra = 0;
+
+        public CombatAction(Hero hero)
+        {
+            this.hero = hero;
+        }
+    }
+
     internal class Program
     {
         static void Main(string[] args)
@@ -297,23 +308,7 @@ namespace D_D_code
 
                 if (opcion == "1")
                 {
-                    Console.WriteLine("Héroes Reclutados:");
-                    Console.WriteLine("");
-
-                    int heroCounter = 0;
-                    while (heroCounter < heroesVivos.Count)
-                    {
-                        Hero h = heroesVivos[heroCounter];
-                        Console.WriteLine(h.GetName());
-                        Console.WriteLine("Vida: " + h.GetActualLife() + "/" + h.GetHP());
-                        Console.WriteLine("Ataque: " + h.GetStrength());
-                        Console.WriteLine("Nivel: " + h.GetLvl());
-                        Console.WriteLine("Experiencia: " + h.GetXP());
-                        Console.WriteLine("");
-                        heroCounter = heroCounter + 1;
-                    }
-
-                    Console.WriteLine("");
+                    MostrarHeroes(heroesVivos);
                 }
                 else
                 {
@@ -399,26 +394,59 @@ namespace D_D_code
                 }
             }
         }
+        static void MostrarHeroes(List<Hero> heroesVivos)
+        {
+            Console.WriteLine("Héroes Reclutados:");
+            Console.WriteLine("");
 
+            int heroCounter = 0;
+            while (heroCounter < heroesVivos.Count)
+            {
+                Hero h = heroesVivos[heroCounter];
+                Console.WriteLine(h.GetName());
+                Console.WriteLine("|");
+                Console.WriteLine("Raza: " + h.GetRace());
+                Console.WriteLine("Clase: " + h.GetClass());
+                Console.WriteLine("Vida: " + h.GetActualLife() + "/" + h.GetHP());
+                Console.WriteLine("Fuerza: " + h.GetStrength());
+                Console.WriteLine("Constitución: " + h.GetConstitution());
+                Console.WriteLine("Inteligencia: " + h.GetInteligence());
+                Console.WriteLine("Velocidad: " + h.GetVelocity());
+                Console.WriteLine("Nivel: " + h.GetLvl());
+                Console.WriteLine("Experiencia: " + h.GetXP() + "/100");
+                Console.WriteLine("");
+                heroCounter = heroCounter + 1;
+            }
+
+            Console.WriteLine("");
+        }
         static int Dungeon(List<Hero> grupo, int oroTotal, Random random, List<Hero> heroesVivos)
         {
             List<Enemy> monstruos = new List<Enemy>();
-            monstruos.Add(new Enemy("Gólem", 3, 2, 5, 3, 5, 30, true, true));
-            monstruos.Add(new Enemy("Esqueleto", 2, 1, 3, 4, 3, 20, false, false));
+            monstruos.Add(new Enemy("Gólem", 3, 2, 5, 3, 5, 15, true, true)); // 15 XP
+            monstruos.Add(new Enemy("Esqueleto", 2, 1, 3, 4, 3, 10, false, false)); // 10 XP
 
+            int initialGold = oroTotal;
             bool combateActivo = true;
+
+            List<CombatAction> acciones = new List<CombatAction>();
+            int i = 0;
+            while (i < grupo.Count)
+            {
+                acciones.Add(new CombatAction(grupo[i]));
+                i = i + 1;
+            }
 
             while (combateActivo)
             {
                 List<(Hero, Enemy)> accionesPendientes = new List<(Hero, Enemy)>();
 
-                int i = 0;
-                while (i < grupo.Count)
+                int count = 0;
+                while (count < grupo.Count)
                 {
                     if (monstruos.Count > 0)
                     {
-                        Hero h = grupo[i];
-
+                        Hero h = grupo[count];
                         Console.WriteLine("Turno de " + h.GetName());
                         Console.WriteLine("Elige monstruo para atacar:");
 
@@ -437,14 +465,23 @@ namespace D_D_code
                         {
                             Enemy objetivo = monstruos[n - 1];
                             accionesPendientes.Add((h, objetivo));
+
+                            int c = 0;
+                            while (c < acciones.Count)
+                            {
+                                if (acciones[c].hero == h)
+                                {
+                                    acciones[c].attacked = true;
+                                }
+                                c = c + 1;
+                            }
                         }
 
                         Console.WriteLine("");
                     }
-                    i = i + 1;
+                    count = count + 1;
                 }
 
-                // Ordenar por velocidad descendente
                 int a = 0;
                 while (a < accionesPendientes.Count - 1)
                 {
@@ -487,8 +524,19 @@ namespace D_D_code
                             if (fuerza >= objetivo.GetVida())
                             {
                                 Console.WriteLine("¡Derrotaste al " + objetivo.GetNombre() + "!");
-                                oroTotal = oroTotal + objetivo.GetDinero();
+                                oroTotal += objetivo.GetDinero();
                                 monstruos.Remove(objetivo);
+
+                                int c = 0;
+                                while (c < acciones.Count)
+                                {
+                                    if (acciones[c].hero == h)
+                                    {
+                                        acciones[c].killed = true;
+                                        acciones[c].xpExtra = acciones[c].xpExtra + objetivo.GetExperiencia();
+                                    }
+                                    c = c + 1;
+                                }
                             }
                             else
                             {
@@ -498,11 +546,21 @@ namespace D_D_code
                         else
                         {
                             Console.WriteLine("Fallaste el ataque.");
+                            if (fuerza >= objetivo.GetVida())
+                            {
+                                int c = 0;
+                                while (c < acciones.Count)
+                                {
+                                    if (acciones[c].hero == h)
+                                    {
+                                        acciones[c].couldHaveKilledButMissed = true;
+                                    }
+                                    c = c + 1;
+                                }
+                            }
                         }
-
                         Console.WriteLine("");
                     }
-
                     at = at + 1;
                 }
 
@@ -513,13 +571,10 @@ namespace D_D_code
                 }
                 else
                 {
-                    // Turno de los monstruos
                     int m = 0;
                     while (m < monstruos.Count)
                     {
                         Enemy enemigo = monstruos[m];
-
-                        // Ataca a un héroe aleatorio del grupo
                         if (grupo.Count > 0)
                         {
                             int indiceObjetivo = random.Next(0, grupo.Count);
@@ -529,11 +584,7 @@ namespace D_D_code
 
                             int dano = enemigo.GetAtaque();
                             int nuevaVida = objetivo.GetActualLife() - dano;
-
-                            if (nuevaVida < 0)
-                            {
-                                nuevaVida = 0;
-                            }
+                            if (nuevaVida < 0) nuevaVida = 0;
 
                             objetivo.SetActualHP(nuevaVida);
 
@@ -545,10 +596,8 @@ namespace D_D_code
                                 Console.WriteLine(objetivo.GetName() + " ha sido derrotado.");
                                 grupo.Remove(objetivo);
                             }
-
                             Console.WriteLine("");
                         }
-
                         m = m + 1;
                     }
 
@@ -560,7 +609,65 @@ namespace D_D_code
                     }
                 }
             }
+
+            int oroGanado = oroTotal - initialGold;
+            Console.WriteLine("\n=== Resumen del combate ===");
+            Console.WriteLine("Oro ganado: " + oroGanado);
+            Console.WriteLine("Oro total: " + oroTotal);
+            Console.WriteLine("");
+
+            int summaryCounter = 0;
+            while (summaryCounter < acciones.Count)
+            {
+                CombatAction acc = acciones[summaryCounter];
+                int xpGanada = acc.xpExtra;
+
+                if (acc.killed)
+                {
+                    // ya se sumó arriba
+                }
+                else if (acc.couldHaveKilledButMissed)
+                {
+                    xpGanada = xpGanada + 10;
+                }
+                else if (acc.attacked)
+                {
+                    xpGanada = xpGanada + 5;
+                }
+
+                if (xpGanada == 0)
+                {
+                    Console.WriteLine(acc.hero.GetName() + " no ha participado y no gana XP.");
+                }
+                else
+                {
+                    Console.WriteLine(acc.hero.GetName() + " gana " + xpGanada + " XP.");
+                    acc.hero.AddXP(xpGanada);
+                }
+                summaryCounter = summaryCounter + 1;
+            }
+
+            Console.WriteLine("===========================\n");
+
             return oroTotal;
+        }
+        static void ShowBattleSummary(List<Hero> heroes, int earnedGold, int totalGold)
+        {
+            Console.WriteLine("\n=== Resumen del combate ===");
+            Console.WriteLine("Oro ganado: " + earnedGold);
+            Console.WriteLine("Oro total: " + totalGold);
+            Console.WriteLine("");
+
+            for (int i = 0; i < heroes.Count; i++)
+            {
+                Hero h = heroes[i];
+                int xpGained = 50; // o puedes ajustar
+                Console.WriteLine(h.GetName() + " ha ganado " + xpGained + " XP.");
+                h.SetXP(xpGained);
+            }
+
+            Console.WriteLine("===========================");
+            Console.WriteLine();
         }
         static bool Healer(int oroTotal, List<Hero> heroesVivos)
         {
