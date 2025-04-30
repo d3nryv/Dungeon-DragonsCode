@@ -152,7 +152,6 @@ namespace D_D_code
             }
         }
     }
-
     class Enemy
     {
         // Atributos
@@ -611,10 +610,11 @@ namespace D_D_code
             }
 
             int oroGanado = oroTotal - initialGold;
-            Console.WriteLine("\n=== Resumen del combate ===");
+            Console.WriteLine();
+            Console.WriteLine("=== Resumen del combate ===");
             Console.WriteLine("Oro ganado: " + oroGanado);
             Console.WriteLine("Oro total: " + oroTotal);
-            Console.WriteLine("");
+            Console.WriteLine();
 
             int summaryCounter = 0;
             while (summaryCounter < acciones.Count)
