@@ -701,7 +701,7 @@ namespace D_D_code
             return magicalImmunity;
         }
     }
-    
+
     public class HeroAttack
     {
         public Hero hero;
@@ -739,12 +739,12 @@ namespace D_D_code
             this.activa = false;
         }
 
-        public string GetNombre()
+        public string GetName()
         {
             return nombre;
         }
 
-        public void SetNombre(string nuevoNombre)
+        public void SetName(string nuevoNombre)
         {
             nombre = nuevoNombre;
         }
@@ -759,12 +759,12 @@ namespace D_D_code
             heroes = nuevosHeroes;
         }
 
-        public bool GetActiva()
+        public bool GetActive()
         {
             return activa;
         }
 
-        public void SetActiva(bool estado)
+        public void SetActive(bool estado)
         {
             activa = estado;
         }
@@ -1133,9 +1133,98 @@ namespace D_D_code
                         break;
 
                     case "3":
-                        int oroRestante = Healer(aventuraActual.GetGold(), aventuraActual.GetHeroes());
-                        aventuraActual.SpendGold(aventuraActual.GetGold());
-                        aventuraActual.AddGold(oroRestante);
+                        bool enTaberna = true;
+                        while (enTaberna)
+                        {
+                            Console.WriteLine("\n--- TABERNA ---");
+                            Console.WriteLine("¿A quién deseas curar?");
+                            Console.WriteLine("1. Curar equipación");
+                            Console.WriteLine("2. Todos los héroes");
+                            Console.WriteLine("3. Seleccionar héroes manualmente");
+                            Console.WriteLine("4. Salir de la taberna");
+                            Console.Write("Opción: ");
+                            string eleccion = Console.ReadLine();
+
+                            List<Hero> seleccionados = new List<Hero>();
+
+                            switch (eleccion)
+                            {
+                                case "1": // Curar equipación
+                                    if (equipaciones.Count == 0)
+                                    {
+                                        Console.WriteLine("No hay equipaciones disponibles.");
+                                        break;
+                                    }
+
+                                    Console.WriteLine("Selecciona una equipación para curar:");
+                                    for (int i = 0; i < equipaciones.Count; i++)
+                                    {
+                                        string nombreEq = equipaciones[i].GetName();
+                                        string nombresHeroes = string.Join(", ", equipaciones[i].GetHeroes().Select(h => h.GetName()));
+                                        Console.WriteLine($"[{i + 1}] {nombreEq} ({nombresHeroes})");
+                                    }
+                                    Console.WriteLine("[0] Volver");
+
+                                    Console.Write("Opción: ");
+                                    string inputEq = Console.ReadLine();
+                                    if (inputEq == "0") break;
+
+                                    if (int.TryParse(inputEq, out int idxEq) && idxEq >= 1 && idxEq <= equipaciones.Count)
+                                    {
+                                        seleccionados.AddRange(equipaciones[idxEq - 1].GetHeroes());
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Equipación no válida.");
+                                    }
+                                    break;
+
+                                case "2": // Todos los héroes
+                                    seleccionados.AddRange(aventuraActual.GetHeroes());
+                                    break;
+
+                                case "3": // Selección manual
+                                    List<Hero> todos = aventuraActual.GetHeroes();
+                                    for (int i = 0; i < todos.Count; i++)
+                                    {
+                                        Console.WriteLine($"{i + 1}. {todos[i].GetName()}");
+                                    }
+
+                                    Console.WriteLine("Introduce los números de los héroes separados por comas (o escribe 0 para volver):");
+                                    string input = Console.ReadLine();
+                                    if (input.Trim() == "0") break;
+
+                                    string[] indices = input.Split(',');
+
+                                    foreach (string s in indices)
+                                    {
+                                        if (int.TryParse(s.Trim(), out int num) && num >= 1 && num <= todos.Count)
+                                        {
+                                            seleccionados.Add(todos[num - 1]);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine($"Número inválido: {s}");
+                                        }
+                                    }
+                                    break;
+
+                                case "4": // Salir de la taberna
+                                    enTaberna = false;
+                                    break;
+
+                                default:
+                                    Console.WriteLine("Opción no válida.");
+                                    break;
+                            }
+
+                            if (seleccionados.Count > 0)
+                            {
+                                int oroRestante = Healer(aventuraActual.GetGold(), seleccionados);
+                                aventuraActual.SpendGold(aventuraActual.GetGold());
+                                aventuraActual.AddGold(oroRestante);
+                            }
+                        }
                         break;
 
                     case "4": // Bazar
@@ -1359,8 +1448,8 @@ namespace D_D_code
                             Console.WriteLine("Equipaciones disponibles:");
                             for (int counterEquip = 0; counterEquip < equipaciones.Count; counterEquip++)
                             {
-                                string activa = equipaciones[counterEquip].GetActiva() ? " (Activa)" : "";
-                                Console.WriteLine((counterEquip + 1) + " - " + equipaciones[counterEquip].GetNombre() + activa);
+                                string activa = equipaciones[counterEquip].GetActive() ? " (Activa)" : "";
+                                Console.WriteLine((counterEquip + 1) + " - " + equipaciones[counterEquip].GetName() + activa);
                             }
 
                             Console.WriteLine((equipaciones.Count + 1) + " - Salir");
@@ -1376,7 +1465,7 @@ namespace D_D_code
 
                                 while (enDetalle)
                                 {
-                                    Console.WriteLine("\n=== " + elegida.GetNombre() + " ===");
+                                    Console.WriteLine("\n=== " + elegida.GetName() + " ===");
                                     Console.WriteLine("(1) Ver héroes");
                                     Console.WriteLine("(2) Activar esta equipación");
                                     Console.WriteLine("(3) Volver");
@@ -1396,9 +1485,9 @@ namespace D_D_code
                                         case "2":
                                             for (int i = 0; i < equipaciones.Count; i++)
                                             {
-                                                equipaciones[i].SetActiva(false);
+                                                equipaciones[i].SetActive(false);
                                             }
-                                            elegida.SetActiva(true);
+                                            elegida.SetActive(true);
 
                                             activeParty.Clear();
                                             List<Hero> nuevaParty = elegida.GetHeroes();
@@ -1429,7 +1518,8 @@ namespace D_D_code
                             Console.WriteLine("¿Qué equipación deseas eliminar?");
                             for (int i = 0; i < equipaciones.Count; i++)
                             {
-                                Console.WriteLine((i + 1) + " - " + equipaciones[i].GetNombre());
+                                string activa = equipaciones[i].GetActive() ? " (Activa)" : "";
+                                Console.WriteLine((i + 1) + " - " + equipaciones[i].GetName() + activa);
                             }
 
                             Console.Write("Introduce el número de la equipación: ");
@@ -1439,18 +1529,43 @@ namespace D_D_code
 
                             if (valido && seleccion >= 1 && seleccion <= equipaciones.Count)
                             {
-                                string nombre = equipaciones[seleccion - 1].GetNombre();
-                                Console.Write("¿Realmente quieres eliminar la equipación \"" + nombre + "\"? (s/n): ");
-                                string confirmacion = Console.ReadLine();
-                                if (confirmacion.ToLower() == "s")
+                                Equipacion equipacionAEliminar = equipaciones[seleccion - 1];
+                                string nombre = equipacionAEliminar.GetName();
+
+                                if (equipacionAEliminar.GetActive())
                                 {
-                                    equipaciones.RemoveAt(seleccion - 1);
-                                    Console.WriteLine("Equipación eliminada.");
+                                    Console.Write($"La equipación \"{nombre}\" está activa. ¿Seguro que quieres eliminarla? Esto desactivará la equipación. (s/n): ");
+                                    string confirmacionActiva = Console.ReadLine();
+
+                                    if (confirmacionActiva.ToLower() == "s")
+                                    {
+                                        equipaciones.RemoveAt(seleccion - 1);
+                                        activeParty.Clear(); // Quitar la party activa también
+                                        Console.WriteLine("Equipación activa eliminada. Ya no hay ninguna equipación activa.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Cancelado.");
+                                    }
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Cancelado.");
+                                    Console.Write("¿Realmente quieres eliminar la equipación \"" + nombre + "\"? (s/n): ");
+                                    string confirmacion = Console.ReadLine();
+                                    if (confirmacion.ToLower() == "s")
+                                    {
+                                        equipaciones.RemoveAt(seleccion - 1);
+                                        Console.WriteLine("Equipación eliminada.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Cancelado.");
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Selección inválida.");
                             }
 
                             break;
@@ -1474,77 +1589,72 @@ namespace D_D_code
         }
         static int Healer(int totalGold, List<Hero> aliveHeroes)
         {
-            if (aliveHeroes.Count == 0)
+            bool anyRevived = false;
+            bool anyHealed = false;
+            int totalHealingCost = 0;
+
+            int deadCount = aliveHeroes.Count(h => h.GetActualLife() <= 0);
+            bool allWereDead = deadCount == aliveHeroes.Count && deadCount > 0;
+
+            foreach (Hero hero in aliveHeroes)
             {
-                Console.WriteLine("No tienes héroes vivos para curar.");
-                Console.WriteLine("");
+                int maxHealth = hero.GetHP();
+                int currentHealth = hero.GetActualLife();
+
+                if (currentHealth <= 0)
+                {
+                    totalHealingCost += 10;
+                    anyRevived = true;
+                }
+                else if (currentHealth < maxHealth)
+                {
+                    int missingPercentage = (maxHealth - currentHealth) * 100 / maxHealth;
+                    int healingCost = (missingPercentage / 20) * 2;
+                    if (healingCost == 0)
+                        healingCost = 2;
+
+                    totalHealingCost += healingCost;
+                    anyHealed = true;
+                }
+            }
+
+            if (totalHealingCost == 0)
+            {
+                Console.WriteLine("Todos tus héroes ya están con la vida al máximo.");
+                return totalGold;
+            }
+
+            if (totalGold >= totalHealingCost)
+            {
+                totalGold -= totalHealingCost;
+
+                foreach (Hero hero in aliveHeroes)
+                {
+                    hero.SetActualHP(hero.GetHP());
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
+                Console.WriteLine("Te quedan: " + totalGold + " de oro.");
+                Console.WriteLine();
+
+                if (allWereDead)
+                    Console.WriteLine("Todos los héroes han sido revividos. Que no vuelva a ocurrir.");
+                else if (anyRevived)
+                    Console.WriteLine("¡Tus personajes fueron revividos!");
+                else if (anyHealed)
+                    Console.WriteLine("¡Tus personajes fueron curados con éxito!");
+
+                Console.WriteLine();
             }
             else
             {
-                int totalHealingCost = 0;
-                int counterHeroesToCheck = 0;
-
-                while (counterHeroesToCheck < aliveHeroes.Count)
-                {
-                    Hero heroToCheck = aliveHeroes[counterHeroesToCheck];
-                    int maxHealth = heroToCheck.GetHP();
-                    int currentHealth = heroToCheck.GetActualLife();
-
-                    if (currentHealth < maxHealth)
-                    {
-                        int missingPercentage = (maxHealth - currentHealth) * 100 / maxHealth;
-                        int healingCost = (missingPercentage / 20) * 2;
-
-                        if (healingCost == 0)
-                        {
-                            healingCost = 2;
-                        }
-
-                        totalHealingCost = totalHealingCost + healingCost;
-                    }
-
-                    counterHeroesToCheck = counterHeroesToCheck + 1;
-                }
-
-                if (totalHealingCost > 0)
-                {
-                    if (totalGold >= totalHealingCost)
-                    {
-                        totalGold = totalGold - totalHealingCost;
-
-                        Console.WriteLine();
-                        Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
-                        Console.WriteLine("Te quedan: " + totalGold + " de oro.");
-                        Console.WriteLine();
-
-                        int counterHealHeroes = 0;
-                        while (counterHealHeroes < aliveHeroes.Count)
-                        {
-                            Hero heroToHeal = aliveHeroes[counterHealHeroes];
-                            if (heroToHeal.GetActualLife() < heroToHeal.GetHP())
-                            {
-                                heroToHeal.SetActualHP(heroToHeal.GetHP());
-                            }
-                            counterHealHeroes = counterHealHeroes + 1;
-                        }
-
-                        Console.WriteLine("¡Héroes curados correctamente!");
-                        Console.WriteLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
-                        Console.WriteLine("Te quedan: " + totalGold + " de oro.");
-                        Console.WriteLine("");
-                        Console.WriteLine("No tienes suficiente oro para curar.");
-                        Console.WriteLine("GAME OVER.");
-                        totalGold = 0;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Todos tus héroes ya están con la vida al máximo.");
-                }
+                Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
+                Console.WriteLine("Te quedan: " + totalGold + " de oro.");
+                Console.WriteLine();
+                Console.WriteLine("No tienes suficiente oro para curar.");
+                Console.WriteLine("GAME OVER.");
+                totalGold = 0;
             }
 
             return totalGold;
@@ -1553,9 +1663,8 @@ namespace D_D_code
         {
             List<List<Enemy>> enemyWaves = new List<List<Enemy>>();
 
-            enemyWaves.Add(new List<Enemy>{new Enemy("Gólem", 3, 2, 5, 3, 5, 15, true, true),new Enemy("Esqueleto", 2, 1, 3, 4, 3, 10, false, false)});
-
-            enemyWaves.Add(new List<Enemy> {new Enemy("Orco", 4, 2, 6, 3, 7, 20, true, true), new Enemy("Mago Oscuro", 3, 3, 4, 5, 6, 25, false, false)});
+            enemyWaves.Add(new List<Enemy> { new Enemy("Gólem", 3, 2, 5, 3, 5, 15, true, true), new Enemy("Esqueleto", 2, 1, 3, 4, 3, 10, false, false) });
+            enemyWaves.Add(new List<Enemy> { new Enemy("Orco", 4, 2, 6, 3, 7, 20, true, true), new Enemy("Mago Oscuro", 3, 3, 4, 5, 6, 25, false, false) });
 
             int initialGold = totalGold;
             Dictionary<Hero, int> originalStrength = new Dictionary<Hero, int>();
@@ -1571,8 +1680,28 @@ namespace D_D_code
 
                 while (isBattleActive)
                 {
+                    // ✅ MOSTRAR TURNOS ANTES DE ACCIONES
+                    List<object> combinedTurnOrder = new List<object>();
+                    combinedTurnOrder.AddRange(group);
+                    combinedTurnOrder.AddRange(enemies);
+                    combinedTurnOrder.Sort((a, b) =>
+                    {
+                        int speedA = a is Hero ? ((Hero)a).GetSpeed() : ((Enemy)a).GetSpeed();
+                        int speedB = b is Hero ? ((Hero)b).GetSpeed() : ((Enemy)b).GetSpeed();
+                        return speedB.CompareTo(speedA);
+                    });
+
+                    Console.WriteLine("Próximos 6 turnos:");
+                    for (int i = 0; i < Math.Min(6, combinedTurnOrder.Count); i++)
+                    {
+                        if (combinedTurnOrder[i] is Hero h)
+                            Console.WriteLine($"{i + 1}. {h.GetName()}");
+                        else if (combinedTurnOrder[i] is Enemy e)
+                            Console.WriteLine($"{i + 1}. {e.GetName()}");
+                    }
+                    Console.WriteLine();
+
                     List<HeroAttack> pendingAttacks = new List<HeroAttack>();
-                    List<Item> usedItems = new List<Item>();
 
                     foreach (Hero currentHero in group.ToList())
                     {
@@ -1661,8 +1790,8 @@ namespace D_D_code
                         }
                     }
 
+                    // Ataques de los héroes
                     pendingAttacks.Sort((a, b) => b.hero.GetSpeed().CompareTo(a.hero.GetSpeed()));
-
                     foreach (var attack in pendingAttacks)
                     {
                         Hero hero = attack.hero;
@@ -1705,28 +1834,7 @@ namespace D_D_code
                         Console.WriteLine();
                     }
 
-                    // Mostrar los próximos 6 turnos
-                    List<object> combinedTurnOrder = new List<object>();
-                    combinedTurnOrder.AddRange(group);
-                    combinedTurnOrder.AddRange(enemies);
-                    combinedTurnOrder.Sort((a, b) =>
-                    {
-                        int speedA = a is Hero ? ((Hero)a).GetSpeed() : ((Enemy)a).GetSpeed();
-                        int speedB = b is Hero ? ((Hero)b).GetSpeed() : ((Enemy)b).GetSpeed();
-                        return speedB.CompareTo(speedA);
-                    });
-
-                    Console.WriteLine("Próximos 6 turnos:");
-                    for (int i = 0; i < Math.Min(6, combinedTurnOrder.Count); i++)
-                    {
-                        if (combinedTurnOrder[i] is Hero h)
-                            Console.WriteLine($"{i + 1}. {h.GetName()}");
-                        else if (combinedTurnOrder[i] is Enemy e)
-                            Console.WriteLine($"{i + 1}. {e.GetName()}");
-                    }
-                    Console.WriteLine();
-
-                    // Ataque de enemigos (considerando doble ataque si son mucho más rápidos)
+                    // Ataques enemigos
                     foreach (Enemy enemy in enemies.ToList())
                     {
                         if (group.Count == 0) break;
@@ -1789,15 +1897,18 @@ namespace D_D_code
                         Console.WriteLine();
                     }
 
+                    // ✅ SI TODOS MUEREN → HEALER Y SALIR
                     if (group.Count == 0)
                     {
                         Console.WriteLine("¡Todos los héroes han caído!");
                         isBattleActive = false;
-                        totalGold = Healer(totalGold, aliveHeroes);
+                        totalGold = Healer(totalGold, group);
+                        return totalGold;
                     }
                 }
             }
 
+            // Restaurar vida y fuerza
             foreach (Hero h in group)
             {
                 if (h.GetActualLife() > h.GetHP())
