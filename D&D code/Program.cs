@@ -224,7 +224,7 @@ namespace D_D_code
             return null; // Retorna null si el índice está fuera de rango
         }
 
-        public Item ShowInventory()
+        public Item ShowInventory(string where)
         {
             Console.WriteLine("=== INVENTORY ===");
             for (int i = 0; i < items.Count; i++)
@@ -233,40 +233,52 @@ namespace D_D_code
             }
 
             Console.WriteLine("[0] Volver al menú...");
-            Console.Write("Selecciona un objeto para ver detalles o equipar: ");
-            string input = Console.ReadLine();
 
-            if (int.TryParse(input, out int selectedIndex) && selectedIndex >= 1 && selectedIndex <= items.Count)
+            switch (where)
             {
-                Item selectedItem = items[selectedIndex - 1];
-                Console.WriteLine($"Seleccionaste: {selectedItem.GetName()}");
+                case "TownSquare":
+                    {
+                        Console.Write("Selecciona un objeto para ver detalles o equipar: ");
+                        string input = Console.ReadLine();
 
-                Console.WriteLine("¿Qué deseas hacer?");
-                Console.WriteLine("1. Ver detalles del objeto");
-                Console.WriteLine("2. Equipar objeto");
-                Console.WriteLine("0. Volver al inventario");
-                Console.Write("Selecciona una opción: ");
-                string action = Console.ReadLine();
+                        if (int.TryParse(input, out int selectedIndex) && selectedIndex >= 1 && selectedIndex <= items.Count)
+                        {
+                            Item selectedItem = items[selectedIndex - 1];
+                            Console.WriteLine($"Seleccionaste: {selectedItem.GetName()}");
 
-                switch (action)
-                {
-                    case "1":
-                        selectedItem.ShowInfo(); // Muestra la información del objeto
-                        break;
+                            Console.WriteLine("¿Qué deseas hacer?");
+                            Console.WriteLine("1. Ver detalles del objeto");
+                            Console.WriteLine("2. Equipar objeto");
+                            Console.WriteLine("0. Volver al inventario");
+                            Console.Write("Selecciona una opción: ");
+                            string action = Console.ReadLine();
 
-                    case "2":
-                        return selectedItem; // Devolverá el item para que el que llama lo equipe
-                    case "0":
-                        Console.WriteLine("Volviendo al inventario...");
+                            switch (action)
+                            {
+                                case "1":
+                                    selectedItem.ShowInfo(); // Muestra la información del objeto
+                                    break;
+
+                                case "2":
+                                    return selectedItem; // Devolverá el item para que el que llama lo equipe
+                                case "0":
+                                    Console.WriteLine("Volviendo al inventario...");
+                                    break;
+                                default:
+                                    Console.WriteLine("Opción no válida.");
+                                    break;
+                            }
+                        }
+                        else if (input == "0")
+                        {
+                            Console.WriteLine("Volviendo al menú...");
+                        }
                         break;
-                    default:
-                        Console.WriteLine("Opción no válida.");
+                    }
+                case "Dungeon":
+                    {
                         break;
-                }
-            }
-            else if (input == "0")
-            {
-                Console.WriteLine("Volviendo al menú...");
+                    }
             }
 
             return null; // Si no se equipó nada
@@ -1065,7 +1077,7 @@ namespace D_D_code
 
             if (choice == "1")
             {
-                inventory.ShowInventory();
+                inventory.ShowInventory("TownSquare");
                 Console.Write("Selecciona un objeto (número): ");
                 string input = Console.ReadLine();
                 int itemIndex;
@@ -1145,6 +1157,12 @@ namespace D_D_code
         public void Actualizar(List<Object> objetosComunes)
         {
             objetosDisponibles.Clear();
+
+            if (objetosComunes == null || objetosComunes.Count == 0)
+            {
+                return;
+            }
+
             Random rng = new Random();
             for (int i = 0; i < 3; i++)
             {
@@ -1161,6 +1179,7 @@ namespace D_D_code
             }
 
             Console.WriteLine("\n=== BAZAR ===");
+            Console.WriteLine($"Tu oro actual: {aventura.GetGold()}\n");
             for (int i = 0; i < objetosDisponibles.Count; i++)
             {
                 var obj = objetosDisponibles[i];
@@ -1201,6 +1220,7 @@ namespace D_D_code
 
             aventura.SpendGold(10);
             Console.WriteLine("\nHas pagado 10 de oro para acceder al Contrabandista.");
+            Console.WriteLine($"Tu oro actual: {aventura.GetGold()}\n");
 
             List<Object> inventarioActual = aventura.GetInventory().GetItems().OfType<Object>().ToList();
             List<string> nombresInventario = inventarioActual.Select(o => o.GetName()).ToList();
@@ -1284,6 +1304,8 @@ namespace D_D_code
 
 
             Console.WriteLine("\n=== ESCUELA DE MAGIA ===");
+            Console.WriteLine($"Tu oro actual: {aventura.GetGold()}\n");
+
             for (int i = 0; i < hechizos.Count; i++)
             {
                 Console.WriteLine($"[{i + 1}] {hechizos[i].GetName()} - {hechizos[i].GetBuyValue()} oro");
@@ -1322,22 +1344,17 @@ namespace D_D_code
         Funcionalidades restantes:
         
         Crear el personaje al principio despues de cargar y antes del menu
-        Añadir opcion en plaza del pubelo que indique los datos tecnicos de la aventura tales como el id, el numero de horas y la fecha de creacion
-
         
         Errores:
         
         La curacion de revivivr a los heroes debe costar 10 por cabeza
         Al tener game over en la dungeon el juego debe finalizar
         
-        
         Pequeñas cosas utiles:
         
-        Las tiendas deben incluir la cantidad de oro de tu aventura
         Cuando seleccionas nueva partida y la partida ya esta creada en ese slot seleccionado debe preguntar si quieres sobreescribir
         Si ya hay un slot de partida con ese nombre decirle que no se puede crear la partida porque ya hay una con ese mismo nombre
         Cuando el objeto equipado en un personaje es una pocion de curacion el personaje bebera la pocion cuando el personaje baje de la mitad de la vida sin gastar turno
-        
         
         Cosas que estaban en la practica y no lei:
         
@@ -1352,6 +1369,7 @@ namespace D_D_code
         Fuerza final del héroe - Resistencia del monstruo = número de dados a lanzar.
         Se lanza esa cantidad de dados.
         Al subir nivel eliges las estadisticas a subir
+        Añadir opcion en plaza del pubelo que indique los datos tecnicos de la aventura tales como el id, el numero de horas y la fecha de creacion
         */
 
         static void Main(string[] args)
@@ -1442,7 +1460,7 @@ namespace D_D_code
             InitializeInventory(gameInventory);
 
             Inventory jugadorInventory = aventuraActual.GetInventory();
-            List<Equipacion> equipaciones = new List<Equipacion>();
+            List<Equipacion> equipaciones = aventuraActual.GetFormations();
             Random rng = new Random();
             Bazar bazar = new Bazar();
             Contrabandista contrabandista = new Contrabandista();
@@ -1589,21 +1607,18 @@ namespace D_D_code
 
                     case "4":
                         var comunes = gameInventory.GetItems().OfType<Object>().Where(o => o.GetTier() == 1).ToList();
-                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
                         bazar.MostrarYComprar(aventuraActual, comunes);
                         GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
                     case "5":
                         var unicos = gameInventory.GetItems().OfType<Object>().Where(o => o.GetTier() == 2).ToList();
-                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
                         contrabandista.Interactuar(aventuraActual, unicos);
                         GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
                     case "6":
                         var hechizos = gameInventory.GetItems().OfType<Spell>().ToList();
-                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
                         escuela.Interactuar(aventuraActual, hechizos);
                         GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
@@ -2172,7 +2187,7 @@ namespace D_D_code
                             }
                             else if (choice == "2")
                             {
-                                gameInventory.ShowInventory();
+                                gameInventory.ShowInventory("Dungeon");
                                 Console.Write("Introduce el número del objeto que quieres usar: ");
                                 if (int.TryParse(Console.ReadLine(), out int selectedItemIndex) &&
                                     selectedItemIndex >= 1 && selectedItemIndex <= gameInventory.GetItemCount())
@@ -2352,7 +2367,7 @@ namespace D_D_code
             }
 
             // Actualizar tiendas
-            bazar.Actualizar(UtilidadesTienda.FiltrarObjetosPorTipo(aventuraActual.GetInventory().GetItems(), false, true));
+            bazar.Actualizar(UtilidadesTienda.FiltrarObjetosPorTipo(gameInventory.GetItems(), false, true));
             escuela.Actualizar(UtilidadesTienda.ObtenerHechizos(aventuraActual.GetInventory().GetItems()));
 
             return totalGold;
