@@ -123,7 +123,7 @@ namespace D_D_code
 
         public override bool IsOffensive() { return false; }
     }
-    
+
     [Serializable]
     public class Spell : Item
     {
@@ -183,7 +183,7 @@ namespace D_D_code
 
         public override bool IsOffensive() { return true; }  // Asumimos todos los hechizos son ofensivos por defecto
     }
-    
+
     [Serializable]
     public class Inventory
     {
@@ -288,24 +288,13 @@ namespace D_D_code
     [Serializable]
     public class Hero
     {
-        // Atributos
-        string name;
-        string title;
-        string race;
-        string heroClass;
-        string lore;
-        DateTime recruitmentTime;
-        int strength;
-        int constitution;
-        int hp;
-        int intelligence;
-        int speed;
-        int actualHP;
-        int level;
-        int xp;
         Item equippedItem;
+        string name, title, race, heroClass, lore;
+        DateTime recruitmentTime;
+        int strength, constitution, hp, intelligence, speed;
+        int actualHP, level, xp;
+        List<Item> equippedItems = new List<Item>();
 
-        // Constructor
         public Hero(string intName, string intTitle, string intRace, string intClass, string intLore, int intStrength, int intConstitution, int intHP, int intIntelligence, int intSpeed)
         {
             name = intName;
@@ -322,67 +311,19 @@ namespace D_D_code
             // Modificadores por raza
             switch (race)
             {
-                case "Humano":
-                    {
-                        hp = hp + 1;
-                        intelligence = intelligence + 1;
-                        break;
-                    }
-                case "Elfo":
-                    {
-                        intelligence = intelligence + 2;
-                        speed = speed + 1;
-                        break;
-                    }
-                case "Orco":
-                    {
-                        strength = strength + 2;
-                        constitution = constitution + 1;
-                        break;
-                    }
-                case "Enano":
-                    {
-                        constitution = constitution + 2;
-                        hp = hp + 1;
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
+                case "Humano": hp += 1; intelligence += 1; break;
+                case "Elfo": intelligence += 2; speed += 1; break;
+                case "Orco": strength += 2; constitution += 1; break;
+                case "Enano": constitution += 2; hp += 1; break;
             }
 
             // Modificadores por clase
             switch (heroClass)
             {
-                case "Guerrero":
-                    {
-                        strength = strength + 2;
-                        constitution = constitution + 1;
-                        break;
-                    }
-                case "Mago":
-                    {
-                        intelligence = intelligence + 2;
-                        hp = hp + 1;
-                        break;
-                    }
-                case "Sanador":
-                    {
-                        constitution = constitution + 2;
-                        intelligence = intelligence + 1;
-                        break;
-                    }
-                case "Ladrón":
-                    {
-                        speed = speed + 2;
-                        strength = strength + 1;
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
+                case "Guerrero": strength += 2; constitution += 1; break;
+                case "Mago": intelligence += 2; hp += 1; break;
+                case "Sanador": constitution += 2; intelligence += 1; break;
+                case "Ladrón": speed += 2; strength += 1; break;
             }
 
             actualHP = hp;
@@ -390,6 +331,88 @@ namespace D_D_code
             xp = 0;
             recruitmentTime = DateTime.Now;
         }
+
+        // Getters
+        public string GetName() => name;
+        public string GetTitle() => title;
+        public string GetRace() => race;
+        public string GetClass() => heroClass;
+        public string GetLore() => lore;
+        public DateTime GetRecruitmentTime() => recruitmentTime;
+        public int GetStrength() => strength;
+        public int GetConstitution() => constitution;
+        public int GetHP() => hp;
+        public int GetIntelligence() => intelligence;
+        public int GetSpeed() => speed;
+        public int GetActualLife() => actualHP;
+        public int GetLevel() => level;
+        public int GetXP() => xp;
+        public List<Item> GetEquippedItems() => equippedItems;
+
+        // Equipar ítem (respetando 2 manos)
+        public void EquipItem(Item item)
+        {
+            int totalHands = GetEquippedHands();
+            int itemHands = item.GetHandsRequired();
+
+            if (totalHands + itemHands > 2)
+            {
+                Console.WriteLine($"No puedes equipar {item.GetName()} porque superas el límite de 2 manos.");
+                return;
+            }
+
+            equippedItems.Add(item);
+            strength += item.GetStrengthBonus();
+            constitution += item.GetConstitutionBonus();
+            intelligence += 0; // si quieres añadirlo
+            speed += item.GetSpeedBonus();
+            hp += item.GetHpBonus();
+            actualHP += item.GetHpBonus();
+
+            Console.WriteLine($"{name} ha equipado {item.GetName()}.");
+        }
+
+        public void UnequipItem(Item item)
+        {
+            if (equippedItems.Contains(item))
+            {
+                equippedItems.Remove(item);
+                strength -= item.GetStrengthBonus();
+                constitution -= item.GetConstitutionBonus();
+                speed -= item.GetSpeedBonus();
+                hp -= item.GetHpBonus();
+                actualHP -= item.GetHpBonus();
+                Console.WriteLine($"{name} se ha quitado {item.GetName()}.");
+            }
+            else
+            {
+                Console.WriteLine($"{name} no tiene equipado {item.GetName()}.");
+            }
+        }
+
+        public int GetEquippedHands()
+        {
+            return equippedItems.Sum(i => i.GetHandsRequired());
+        }
+
+        // Subida de nivel
+        public void AddXP(int gainedXP)
+        {
+            xp += gainedXP;
+            while (xp >= 100)
+            {
+                xp -= 100;
+                level++;
+                int oldHP = hp, oldStrength = strength, oldSpeed = speed;
+                hp++; strength += 2; speed++; actualHP = hp;
+
+                Console.WriteLine($"¡{name} ha subido al nivel {level}!");
+                Console.WriteLine($"HP -> {oldHP} +1");
+                Console.WriteLine($"Strength -> {oldStrength} +2");
+                Console.WriteLine($"Speed -> {oldSpeed} +1\n");
+            }
+        }
+
 
         // Setters
         public void SetName(string newName)
@@ -457,111 +480,9 @@ namespace D_D_code
             xp = newXP;
         }
 
-        // Getters
-        public string GetName()
-        {
-            return name;
-        }
-
-        public string GetTitle()
-        {
-            return title;
-        }
-
-        public string GetRace()
-        {
-            return race;
-        }
-
-        public string GetClass()
-        {
-            return heroClass;
-        }
-
-        public string GetLore()
-        {
-            return lore;
-        }
-
-        public DateTime GetRecruitmentTime()
-        {
-            return recruitmentTime;
-        }
-
-        public int GetStrength()
-        {
-            return strength;
-        }
-
-        public int GetConstitution()
-        {
-            return constitution;
-        }
-
-        public int GetHP()
-        {
-            return hp;
-        }
-
-        public int GetIntelligence()
-        {
-            return intelligence;
-        }
-
-        public int GetSpeed()
-        {
-            return speed;
-        }
-
-        public int GetActualLife()
-        {
-            return actualHP;
-        }
-
-        public int GetLevel()
-        {
-            return level;
-        }
-
-        public int GetXP()
-        {
-            return xp;
-        }
-
         public Item GetEquippedItem()
         {
             return equippedItem; // Devuelve el ítem actualmente equipado, o null si no hay ninguno.
-        }
-
-
-        // Modificadores
-
-        public void AddXP(int gainedXP)
-        {
-            xp = xp + gainedXP;
-
-            while (xp >= 100)
-            {
-                xp = xp - 100;
-                level = level + 1;
-
-                int oldHP = hp;
-                int oldStrength = strength;
-                int oldSpeed = speed;
-
-                hp = hp + 1;
-                strength = strength + 2;
-                speed = speed + 1;
-                actualHP = hp;
-
-                Console.WriteLine("¡" + name + " ha subido al nivel " + level + "!");
-                Console.WriteLine("HP -> " + oldHP + " + 1");
-                Console.WriteLine("Strength -> " + oldStrength + " + 2");
-                Console.WriteLine("Speed -> " + oldSpeed + " + 1");
-                Console.WriteLine("Constitution -> " + constitution);
-                Console.WriteLine("Intelligence -> " + intelligence);
-                Console.WriteLine("");
-            }
         }
 
         public void RemoveItem()
@@ -636,7 +557,7 @@ namespace D_D_code
         }
 
     }
-    
+
     [Serializable]
     public class Enemy
     {
@@ -785,7 +706,7 @@ namespace D_D_code
             this.hero = hero;
         }
     }
-    
+
     [Serializable]
     public class Equipacion
     {
@@ -1279,7 +1200,7 @@ namespace D_D_code
         }
 
         public void Interactuar(Adventure aventura, List<Spell> hechizosDisponibles)
-        { 
+        {
             if (!accesoPagado)
             {
                 Console.WriteLine("¿Deseas pagar 15 de oro para acceder a la Escuela de Magia? (s/n)");
@@ -1289,7 +1210,7 @@ namespace D_D_code
                     {
                         aventura.SpendGold(15);
                         this.hechizos = hechizosDisponibles.OrderBy(x => new Random().Next()).Take(3).ToList();
-                    accesoPagado = true;
+                        accesoPagado = true;
                         hechizoComprado = false;
                         Console.WriteLine("Has pagado por acceder a la Escuela de Magia.");
                     }
@@ -1300,7 +1221,7 @@ namespace D_D_code
                     }
                 }
                 else return;
-        }
+            }
 
 
             Console.WriteLine("\n=== ESCUELA DE MAGIA ===");
@@ -1345,20 +1266,13 @@ namespace D_D_code
         
         Crear el personaje al principio despues de cargar y antes del menu
         
-        Errores:
-        
-        La curacion de revivivr a los heroes debe costar 10 por cabeza
-        Al tener game over en la dungeon el juego debe finalizar
-        
         Pequeñas cosas utiles:
         
         Cuando seleccionas nueva partida y la partida ya esta creada en ese slot seleccionado debe preguntar si quieres sobreescribir
         Si ya hay un slot de partida con ese nombre decirle que no se puede crear la partida porque ya hay una con ese mismo nombre
-        Cuando el objeto equipado en un personaje es una pocion de curacion el personaje bebera la pocion cuando el personaje baje de la mitad de la vida sin gastar turno
         
         Cosas que estaban en la practica y no lei:
         
-        Ampliar el numero de slots de equipaciones a 10
         Modificar tras crear las equipaciones
         Poder "vender" heroes pero nunca te debes quedar con menos de 1
         Se pueden vender items
@@ -1848,9 +1762,9 @@ namespace D_D_code
                 {
                     case "1":
                         {
-                            if (equipaciones.Count >= 5)
+                            if (equipaciones.Count >= 10)
                             {
-                                Console.WriteLine("Ya tienes el máximo de 5 equipaciones.");
+                                Console.WriteLine("Ya tienes el máximo de 10 equipaciones.");
                                 break;
                             }
 
@@ -2061,10 +1975,10 @@ namespace D_D_code
                 }
                 else if (currentHealth < maxHealth)
                 {
-                    int missingPercentage = (maxHealth - currentHealth) * 100 / maxHealth;
-                    int healingCost = (missingPercentage / 20) * 2;
-                    if (healingCost == 0)
-                        healingCost = 2;
+                    int percentage = (currentHealth * 100) / maxHealth;
+                    int healingCost = percentage >= 75 ? 2 :
+                                      percentage >= 50 ? 4 :
+                                      percentage >= 25 ? 6 : 8;
 
                     totalHealingCost += healingCost;
                     anyHealed = true;
@@ -2087,9 +2001,8 @@ namespace D_D_code
                 }
 
                 Console.WriteLine();
-                Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
-                Console.WriteLine("Te quedan: " + totalGold + " de oro.");
-                Console.WriteLine();
+                Console.WriteLine($"Coste total de curación: {totalHealingCost} de oro.");
+                Console.WriteLine($"Te quedan: {totalGold} de oro.\n");
 
                 if (allWereDead)
                     Console.WriteLine("Todos los héroes han sido revividos. Que no vuelva a ocurrir.");
@@ -2098,19 +2011,13 @@ namespace D_D_code
                 else if (anyHealed)
                     Console.WriteLine("¡Tus personajes fueron curados con éxito!");
 
-                Console.WriteLine();
+                return totalGold;
             }
             else
             {
-                Console.WriteLine("Coste total de curación: " + totalHealingCost + " de oro.");
-                Console.WriteLine("Te quedan: " + totalGold + " de oro.");
-                Console.WriteLine();
-                Console.WriteLine("No tienes suficiente oro para curar.");
-                Console.WriteLine("GAME OVER.");
-                totalGold = 0;
+                // Retornamos -1 si no se puede curar y todos estaban muertos
+                return allWereDead ? -1 : totalGold;
             }
-
-            return totalGold;
         }
         static int Dungeon(List<Hero> activeParty, int totalGold, Random rng, List<Hero> allHeroes, Inventory gameInventory, Adventure aventuraActual, Bazar bazar, EscuelaMagia escuela)
         {
