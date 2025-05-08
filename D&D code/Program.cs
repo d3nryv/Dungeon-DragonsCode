@@ -5,209 +5,151 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+
 
 namespace D_D_code
 {
+    [Serializable]
     public abstract class Item
     {
-        // Protected attributes
+        // Atributos protegidos
         protected string itemName;
         protected int itemBuyValue;
         protected int itemSellValue;
         protected int itemHandsRequired;
+        protected bool isConsumable;  // Nuevo atributo para indicar si es consumible o no
 
         // Constructor
-        public Item(string intName, int intBuyValue, int intSellValue, int intHandsRequired)
+        public Item(string intName, int intBuyValue, int intSellValue, int intHandsRequired, bool intIsConsumable)
         {
             itemName = intName;
             itemBuyValue = intBuyValue;
             itemSellValue = intSellValue;
             itemHandsRequired = intHandsRequired;
+            isConsumable = intIsConsumable;  // Inicialización del parámetro isConsumable
         }
 
         // Getters
-        public string GetName()
-        {
-            return itemName;
-        }
+        public string GetName() { return itemName; }
+        public int GetBuyValue() { return itemBuyValue; }
+        public int GetSellValue() { return itemSellValue; }
+        public int GetHandsRequired() { return itemHandsRequired; }
+        public virtual bool GetIsConsumable() { return isConsumable; }  // Método virtual para obtener si es consumible
 
-        public int GetBuyValue()
-        {
-            return itemBuyValue;
-        }
+        // Métodos modificadores
+        public virtual bool IsOffensive() { return false; }
+        public virtual bool IsEquipable() { return false; }  // Por defecto, no es equipable
+        public virtual bool HasEffects() { return false; }  // Por defecto, no tiene efectos
 
-        public int GetSellValue()
-        {
-            return itemSellValue;
-        }
-
-        public int GetHandsRequired()
-        {
-            return itemHandsRequired;
-        }
-
-        // Modificadores
-        public virtual bool IsOffensive()
-        {
-            return false;
-        }
-
-        public virtual bool IsEquipable()
-        {
-            return false; // Por defecto, no es equipable
-        }
-
-        public virtual bool HasEffects()
-        {
-            return false; // Por defecto, no tiene efectos
-        }
-
-        // Abstract methods
+        // Métodos abstractos
         public abstract int GetBonus();
-        public abstract bool GetIsConsumable();
         public abstract void Use(Hero targetHero, Enemy targetEnemy);
         public abstract void ShowInfo();
+
+        // Métodos abstractos para obtener bonificaciones
+        public abstract int GetStrengthBonus();
+        public abstract int GetConstitutionBonus();
+        public abstract int GetSpeedBonus();
+        public abstract int GetHpBonus();
     }
+
+    [Serializable]
     public class Object : Item
     {
-        private bool isConsumable;
         private bool isMagical;
         private int bonusStrength;
+        private int bonusConstitution;
+        private int bonusIntelligence;
+        private int bonusSpeed;
         private int bonusHP;
+        private int tier;
 
-        public Object(string intName, int intBuyValue, int intSellValue, int intHandsRequired, bool intIsMagical, bool intIsConsumable, int intBonusStrength, int intBonusHP)
-            : base(intName, intBuyValue, intSellValue, intHandsRequired)
+        // Constructor y otros métodos
+
+        public Object(string intName, int intBuyValue, int intSellValue, int intHandsRequired, bool intIsMagical,
+                      int intBonusStrength, int intBonusConstitution, int intBonusIntelligence, int intBonusSpeed,
+                      int intBonusHP, int intTier)
+            : base(intName, intBuyValue, intSellValue, intHandsRequired, false)
         {
             isMagical = intIsMagical;
-            isConsumable = intIsConsumable;
             bonusStrength = intBonusStrength;
+            bonusConstitution = intBonusConstitution;
+            bonusIntelligence = intBonusIntelligence;
+            bonusSpeed = intBonusSpeed;
             bonusHP = intBonusHP;
+            tier = intTier;
         }
 
+
+        // Implementación del método abstracto GetBonus()
         public override int GetBonus()
         {
-            return bonusStrength;
+            // Devuelve la suma de todas las bonificaciones, o una bonificación específica
+            // Dependiendo de cómo quieras que funcione este método, puedes sumar todas las bonificaciones o devolver solo una.
+            // Ejemplo: Devolver la bonificación de fuerza
+            return bonusStrength + bonusConstitution + bonusIntelligence + bonusSpeed + bonusHP;
         }
 
-        public override bool GetIsConsumable()
+        public override int GetStrengthBonus() { return bonusStrength; }
+        public override int GetConstitutionBonus() { return bonusConstitution; }
+        public override int GetSpeedBonus() { return bonusSpeed; }
+        public override int GetHpBonus() { return bonusHP; }
+        public int GetTier()
         {
-            return isConsumable;
+            return tier;
         }
 
-        public override bool IsEquipable()
-        {
-            return true; // Los objetos pueden ser equipados
-        }
 
-        public override bool HasEffects()
-        {
-            return bonusStrength > 0 || bonusHP > 0; // Tiene efectos si hay bonificaciones
-        }
-
-        // Se llama durante combate (efecto temporal)
         public override void Use(Hero targetHero, Enemy targetEnemy)
         {
-            bool effectApplied = false;
-
-            // Aplicar curación (temporal)
-            if (bonusHP > 0)
-            {
-                int actualHP = targetHero.GetActualLife();
-                int maxHP = targetHero.GetHP();
-
-                if (actualHP < maxHP)
-                {
-                    int newHP = actualHP + bonusHP;
-                    if (newHP > maxHP)
-                    {
-                        newHP = maxHP;
-                    }
-                    targetHero.SetActualHP(newHP);
-                    Console.WriteLine(targetHero.GetName() + " ha recuperado " + (newHP - actualHP) + " puntos de vida.");
-                    effectApplied = true;
-                }
-                else
-                {
-                    Console.WriteLine(targetHero.GetName() + " ya tiene la vida al máximo. No se recupera vida.");
-                }
-            }
-
-            // Aplicar bonificación temporal de fuerza
-            if (bonusStrength > 0)
-            {
-                targetHero.SetStrength(targetHero.GetStrength() + bonusStrength);
-                Console.WriteLine(targetHero.GetName() + " gana +" + bonusStrength + " fuerza temporal.");
-                effectApplied = true;
-            }
-
-            // Mostrar si el objeto no tuvo efecto
-            if (!effectApplied)
-            {
-                Console.WriteLine("El objeto " + GetName() + " no tuvo ningún efecto.");
-            }
-        }
-
-        // Se llama si se implementa mecánica de equipamiento
-        public void Equip(Hero targetHero)
-        {
-            if (bonusStrength > 0)
-            {
-                targetHero.SetStrength(targetHero.GetStrength() + bonusStrength);
-                Console.WriteLine(targetHero.GetName() + " equipa " + GetName() + " y gana +" + bonusStrength + " fuerza.");
-            }
-
-            if (bonusHP > 0)
-            {
-                targetHero.SetHP(targetHero.GetHP() + bonusHP);
-                targetHero.SetActualHP(targetHero.GetActualLife() + bonusHP);
-                Console.WriteLine(targetHero.GetName() + " equipa " + GetName() + " y gana +" + bonusHP + " HP permanente.");
-            }
+            // Lógica de uso, según el tipo de objeto
+            Console.WriteLine($"{targetHero.GetName()} usa el objeto {GetName()}.");
         }
 
         public override void ShowInfo()
         {
             Console.WriteLine("Nombre: " + GetName());
-            Console.WriteLine("Tipo: Objeto");
-            Console.WriteLine("Mágico: " + (isMagical ? "Sí" : "No"));
-            Console.WriteLine("Consumible: " + (isConsumable ? "Sí" : "No"));
+            Console.WriteLine("Consumible: " + GetIsConsumable());
             Console.WriteLine("Manos requeridas: " + GetHandsRequired());
-            Console.WriteLine("Bonificaciones -> Fuerza: " + bonusStrength + ", HP: " + bonusHP);
+            Console.WriteLine("Fuerza: " + bonusStrength);
+            Console.WriteLine("Constitución: " + bonusConstitution);
+            Console.WriteLine("Inteligencia: " + bonusIntelligence);
+            Console.WriteLine("Velocidad: " + bonusSpeed);
+            Console.WriteLine("HP: " + bonusHP);
             Console.WriteLine("Compra: " + GetBuyValue() + " | Venta: " + GetSellValue());
         }
+
+        public override bool IsOffensive() { return false; }
     }
+    
+    [Serializable]
     public class Spell : Item
     {
         int spellDifficulty;
         int bonusIntelligence;
-        bool isConsumable;
 
         public Spell(string intName, int intBuyValue, int intSellValue, int intHandsRequired, int intDifficulty, int intBonusIntelligence)
-            : base(intName, intBuyValue, intSellValue, intHandsRequired)
+            : base(intName, intBuyValue, intSellValue, intHandsRequired, false)  // Los hechizos no son consumibles por defecto
         {
             spellDifficulty = intDifficulty;
             bonusIntelligence = intBonusIntelligence;
-            isConsumable = false; // Por norma, los hechizos no se consumen
         }
 
-        public override int GetBonus()
-        {
-            return bonusIntelligence;
-        }
+        public override int GetBonus() { return bonusIntelligence; }
 
-        public override bool GetIsConsumable()
-        {
-            return isConsumable;
-        }
+        public override bool GetIsConsumable() { return isConsumable; }
 
-        public override bool IsEquipable()
-        {
-            return false; // Los hechizos no son equipables
-        }
+        public override bool IsEquipable() { return false; }
 
-        public override bool HasEffects()
-        {
-            return true; // Los hechizos pueden tener efectos
-        }
+        public override bool HasEffects() { return true; }
+
+        // Métodos abstractos implementados
+        public override int GetStrengthBonus() { return 0; }  // Hechizos no tienen bonificación de fuerza
+        public override int GetConstitutionBonus() { return 0; }  // Hechizos no tienen bonificación de constitución
+        public override int GetSpeedBonus() { return 0; }  // Hechizos no tienen bonificación de velocidad
+        public override int GetHpBonus() { return 0; }  // Hechizos no tienen bonificación de HP
 
         public override void Use(Hero targetHero, Enemy targetEnemy)
         {
@@ -239,11 +181,10 @@ namespace D_D_code
             Console.WriteLine("Compra: " + GetBuyValue() + " | Venta: " + GetSellValue());
         }
 
-        public override bool IsOffensive()
-        {
-            return true; // Asumimos todos los hechizos son ofensivos por defecto
-        }
+        public override bool IsOffensive() { return true; }  // Asumimos todos los hechizos son ofensivos por defecto
     }
+    
+    [Serializable]
     public class Inventory
     {
         List<Item> items;
@@ -268,6 +209,12 @@ namespace D_D_code
             return items.Count;
         }
 
+        // Método para obtener todos los objetos en el inventario
+        public List<Item> GetItems()
+        {
+            return items; // Devuelve la lista completa de objetos
+        }
+
         public Item GetItem(int index)
         {
             if (index >= 0 && index < items.Count)
@@ -277,18 +224,56 @@ namespace D_D_code
             return null; // Retorna null si el índice está fuera de rango
         }
 
-        public void ShowInventory()
+        public Item ShowInventory()
         {
             Console.WriteLine("=== INVENTORY ===");
             for (int i = 0; i < items.Count; i++)
             {
-                Console.WriteLine((i + 1) + ".");
-                items[i].ShowInfo();
-                Console.WriteLine();
+                Console.WriteLine($"{i + 1}. {items[i].GetName()}");
             }
+
+            Console.WriteLine("[0] Volver al menú...");
+            Console.Write("Selecciona un objeto para ver detalles o equipar: ");
+            string input = Console.ReadLine();
+
+            if (int.TryParse(input, out int selectedIndex) && selectedIndex >= 1 && selectedIndex <= items.Count)
+            {
+                Item selectedItem = items[selectedIndex - 1];
+                Console.WriteLine($"Seleccionaste: {selectedItem.GetName()}");
+
+                Console.WriteLine("¿Qué deseas hacer?");
+                Console.WriteLine("1. Ver detalles del objeto");
+                Console.WriteLine("2. Equipar objeto");
+                Console.WriteLine("0. Volver al inventario");
+                Console.Write("Selecciona una opción: ");
+                string action = Console.ReadLine();
+
+                switch (action)
+                {
+                    case "1":
+                        selectedItem.ShowInfo(); // Muestra la información del objeto
+                        break;
+
+                    case "2":
+                        return selectedItem; // Devolverá el item para que el que llama lo equipe
+                    case "0":
+                        Console.WriteLine("Volviendo al inventario...");
+                        break;
+                    default:
+                        Console.WriteLine("Opción no válida.");
+                        break;
+                }
+            }
+            else if (input == "0")
+            {
+                Console.WriteLine("Volviendo al menú...");
+            }
+
+            return null; // Si no se equipó nada
         }
     }
 
+    [Serializable]
     public class Hero
     {
         // Atributos
@@ -306,7 +291,7 @@ namespace D_D_code
         int actualHP;
         int level;
         int xp;
-        List<Item> equippedItems = new List<Item>();
+        Item equippedItem;
 
         // Constructor
         public Hero(string intName, string intTitle, string intRace, string intClass, string intLore, int intStrength, int intConstitution, int intHP, int intIntelligence, int intSpeed)
@@ -531,6 +516,12 @@ namespace D_D_code
             return xp;
         }
 
+        public Item GetEquippedItem()
+        {
+            return equippedItem; // Devuelve el ítem actualmente equipado, o null si no hay ninguno.
+        }
+
+
         // Modificadores
 
         public void AddXP(int gainedXP)
@@ -561,27 +552,80 @@ namespace D_D_code
             }
         }
 
-        public void EquipItem(Item item)
+        public void RemoveItem()
         {
-            if (!equippedItems.Contains(item))
+            if (equippedItem != null)
             {
-                equippedItems.Add(item);
+                // Remover las estadísticas del héroe basadas en el ítem
+                strength -= equippedItem.GetStrengthBonus();
+                constitution -= equippedItem.GetConstitutionBonus();
+                hp -= equippedItem.GetHpBonus();
+                speed -= equippedItem.GetSpeedBonus();
+                actualHP -= equippedItem.GetHpBonus(); // Ajustamos la vida real
+
+                equippedItem = null;
+                Console.WriteLine($"{name} ya no tiene ningún objeto equipado.");
+            }
+            else
+            {
+                Console.WriteLine($"{name} no tiene ningún objeto equipado.");
             }
         }
 
-        public void RemoveItem(Item item)
+        public void SetItem(Item item)
         {
-            if (equippedItems.Contains(item))
+            // Verificar si el héroe ya tiene un objeto equipado
+            if (equippedItem != null)
             {
-                equippedItems.Remove(item);
+                Console.WriteLine($"{name} ya tiene el objeto {equippedItem.GetName()} equipado.");
+                Console.WriteLine($"¿Deseas reemplazar el objeto {equippedItem.GetName()} con {item.GetName()}? (s/n)");
+                string respuesta = Console.ReadLine().ToLower();
+
+                if (respuesta == "s")
+                {
+                    // Remover las bonificaciones del ítem anterior
+                    strength -= equippedItem.GetStrengthBonus();
+                    constitution -= equippedItem.GetConstitutionBonus();
+                    hp -= equippedItem.GetHpBonus();
+                    speed -= equippedItem.GetSpeedBonus();
+                    actualHP -= equippedItem.GetHpBonus(); // Ajustamos la vida real
+
+                    // Equipar el nuevo ítem
+                    equippedItem = item;
+
+                    // Agregar las bonificaciones del nuevo ítem
+                    strength += item.GetStrengthBonus();
+                    constitution += item.GetConstitutionBonus();
+                    hp += item.GetHpBonus();
+                    speed += item.GetSpeedBonus();
+                    actualHP += item.GetHpBonus(); // Aseguramos que se actualice la vida real
+
+                    Console.WriteLine($"{item.GetName()} ha sido equipado a {name}.");
+                }
+                else
+                {
+                    Console.WriteLine("El objeto no ha sido equipado.");
+                }
+            }
+            else
+            {
+                // Si no tiene un ítem equipado, lo equipamos directamente
+                equippedItem = item;
+
+                // Agregar las bonificaciones del ítem
+                strength += item.GetStrengthBonus();
+                constitution += item.GetConstitutionBonus();
+                hp += item.GetHpBonus();
+                speed += item.GetSpeedBonus();
+                actualHP += item.GetHpBonus(); // Aseguramos que se actualice la vida real
+
+                Console.WriteLine($"{item.GetName()} ha sido equipado a {name}.");
             }
         }
 
-        public List<Item> GetItems()
-        {
-            return equippedItems;
-        }
     }
+    
+    [Serializable]
     public class Enemy
     {
         // Atributos
@@ -702,6 +746,7 @@ namespace D_D_code
         }
     }
 
+    [Serializable]
     public class HeroAttack
     {
         public Hero hero;
@@ -713,6 +758,8 @@ namespace D_D_code
             enemy = e;
         }
     }
+
+    [Serializable]
     public class CombatAction
     {
         public Hero hero;
@@ -726,6 +773,8 @@ namespace D_D_code
             this.hero = hero;
         }
     }
+    
+    [Serializable]
     public class Equipacion
     {
         private string nombre;
@@ -770,6 +819,7 @@ namespace D_D_code
         }
     }
 
+    [Serializable]
     public class Adventure
     {
         // Atributos
@@ -904,6 +954,7 @@ namespace D_D_code
         }
     }
 
+    [Serializable]
     public class BattleManager
     {
         Random rng = new Random();
@@ -1065,33 +1116,340 @@ namespace D_D_code
         }
     }
 
+    [Serializable]
+    public static class UtilidadesTienda
+    {
+        public static List<Object> FiltrarObjetosPorTipo(List<Item> todos, bool soloUnicos, bool soloComunes)
+        {
+            return todos.OfType<Object>()
+                .Where(o =>
+                {
+                    bool esUnico = o.GetBuyValue() >= 100; // Puedes ajustar este criterio
+                    if (soloUnicos) return esUnico;
+                    if (soloComunes) return !esUnico;
+                    return true;
+                }).ToList();
+        }
+
+        public static List<Spell> ObtenerHechizos(List<Item> todos)
+        {
+            return todos.OfType<Spell>().ToList();
+        }
+    }
+
+    [Serializable]
+    public class Bazar
+    {
+        public List<Item> objetosDisponibles = new List<Item>();
+
+        public void Actualizar(List<Object> objetosComunes)
+        {
+            objetosDisponibles.Clear();
+            Random rng = new Random();
+            for (int i = 0; i < 3; i++)
+            {
+                int index = rng.Next(objetosComunes.Count);
+                objetosDisponibles.Add(objetosComunes[index]);
+            }
+        }
+
+        public void MostrarYComprar(Adventure aventura, List<Object> poolObjetosComunes)
+        {
+            if (objetosDisponibles.Count == 0)
+            {
+                Actualizar(poolObjetosComunes);
+            }
+
+            Console.WriteLine("\n=== BAZAR ===");
+            for (int i = 0; i < objetosDisponibles.Count; i++)
+            {
+                var obj = objetosDisponibles[i];
+                Console.WriteLine($"[{i + 1}] {obj.GetName()} - {obj.GetBuyValue()} oro");
+            }
+            Console.WriteLine("[0] Volver");
+
+            Console.Write("Selecciona un objeto para comprar: ");
+            if (int.TryParse(Console.ReadLine(), out int eleccion) && eleccion >= 1 && eleccion <= objetosDisponibles.Count)
+            {
+                var seleccionado = objetosDisponibles[eleccion - 1];
+                if (aventura.GetGold() >= seleccionado.GetBuyValue())
+                {
+                    aventura.SpendGold(seleccionado.GetBuyValue());
+                    aventura.GetInventory().AddItem(seleccionado);
+                    objetosDisponibles.RemoveAt(eleccion - 1);
+                    Console.WriteLine($"Has comprado {seleccionado.GetName()}.");
+                }
+                else
+                {
+                    Console.WriteLine("No tienes suficiente oro.");
+                }
+            }
+        }
+
+    }
+
+    [Serializable]
+    public class Contrabandista
+    {
+        public void Interactuar(Adventure aventura, List<Object> objetosUnicos)
+        {
+            if (aventura.GetGold() < 10)
+            {
+                Console.WriteLine("No tienes suficiente oro para entrar al Contrabandista (10).");
+                return;
+            }
+
+            aventura.SpendGold(10);
+            Console.WriteLine("\nHas pagado 10 de oro para acceder al Contrabandista.");
+
+            List<Object> inventarioActual = aventura.GetInventory().GetItems().OfType<Object>().ToList();
+            List<string> nombresInventario = inventarioActual.Select(o => o.GetName()).ToList();
+            List<Object> unicosFiltrados = objetosUnicos
+                .Where(o => !nombresInventario.Contains(o.GetName()))
+                .GroupBy(o => o.GetName()).Select(g => g.First()).ToList();
+
+            if (unicosFiltrados.Count == 0)
+            {
+                Console.WriteLine("No quedan objetos únicos disponibles para ofrecerte.");
+                return;
+            }
+
+            Random rng = new Random();
+            List<Object> oferta = unicosFiltrados.OrderBy(_ => rng.Next()).Take(3).ToList();
+
+            for (int i = 0; i < oferta.Count; i++)
+            {
+                Console.WriteLine($"[{i + 1}] {oferta[i].GetName()} - {oferta[i].GetBuyValue()} oro");
+            }
+            Console.WriteLine("[0] No comprar nada");
+
+            Console.Write("Selecciona uno para comprar (solo uno): ");
+            if (int.TryParse(Console.ReadLine(), out int eleccion) && eleccion >= 1 && eleccion <= oferta.Count)
+            {
+                Object elegido = oferta[eleccion - 1];
+                if (aventura.GetGold() >= elegido.GetBuyValue())
+                {
+                    aventura.SpendGold(elegido.GetBuyValue());
+                    aventura.GetInventory().AddItem(elegido);
+                    Console.WriteLine($"Has comprado {elegido.GetName()}.");
+                }
+                else
+                {
+                    Console.WriteLine("No tienes suficiente oro.");
+                }
+            }
+
+            Console.WriteLine("El contrabandista desaparece en la sombra...");
+        }
+    }
+
+    [Serializable]
+    public class EscuelaMagia
+    {
+        private bool accesoPagado = false;
+        private bool hechizoComprado = false;
+        private List<Spell> hechizos = new List<Spell>();
+
+        public void Actualizar(List<Spell> pool)
+        {
+            Random rng = new Random();
+            hechizos = pool.OrderBy(_ => rng.Next()).Take(3).ToList();
+            accesoPagado = false;
+            hechizoComprado = false;
+        }
+
+        public void Interactuar(Adventure aventura, List<Spell> hechizosDisponibles)
+        { 
+            if (!accesoPagado)
+            {
+                Console.WriteLine("¿Deseas pagar 15 de oro para acceder a la Escuela de Magia? (s/n)");
+                if (Console.ReadLine().ToLower() == "s")
+                {
+                    if (aventura.GetGold() >= 15)
+                    {
+                        aventura.SpendGold(15);
+                        this.hechizos = hechizosDisponibles.OrderBy(x => new Random().Next()).Take(3).ToList();
+                    accesoPagado = true;
+                        hechizoComprado = false;
+                        Console.WriteLine("Has pagado por acceder a la Escuela de Magia.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No tienes suficiente oro.");
+                        return;
+                    }
+                }
+                else return;
+        }
+
+
+            Console.WriteLine("\n=== ESCUELA DE MAGIA ===");
+            for (int i = 0; i < hechizos.Count; i++)
+            {
+                Console.WriteLine($"[{i + 1}] {hechizos[i].GetName()} - {hechizos[i].GetBuyValue()} oro");
+            }
+            Console.WriteLine("[0] Volver");
+
+            if (hechizoComprado)
+            {
+                Console.WriteLine("Ya has comprado un hechizo. Solo puedes observar ahora.");
+                return;
+            }
+
+            Console.Write("Selecciona un hechizo para comprar: ");
+            if (int.TryParse(Console.ReadLine(), out int eleccion) && eleccion >= 1 && eleccion <= hechizos.Count)
+            {
+                Spell seleccionado = hechizos[eleccion - 1];
+                if (aventura.GetGold() >= seleccionado.GetBuyValue())
+                {
+                    aventura.SpendGold(seleccionado.GetBuyValue());
+                    aventura.GetInventory().AddItem(seleccionado);
+                    hechizoComprado = true;
+                    Console.WriteLine($"Has aprendido {seleccionado.GetName()}.");
+                }
+                else
+                {
+                    Console.WriteLine("No tienes suficiente oro.");
+                }
+            }
+        }
+    }
+
     internal class Program
     {
+
+        /*
+        Funcionalidades restantes:
+        
+        Crear el personaje al principio despues de cargar y antes del menu
+        Añadir opcion en plaza del pubelo que indique los datos tecnicos de la aventura tales como el id, el numero de horas y la fecha de creacion
+
+        
+        Errores:
+        
+        La curacion de revivivr a los heroes debe costar 10 por cabeza
+        Al tener game over en la dungeon el juego debe finalizar
+        
+        
+        Pequeñas cosas utiles:
+        
+        Las tiendas deben incluir la cantidad de oro de tu aventura
+        Cuando seleccionas nueva partida y la partida ya esta creada en ese slot seleccionado debe preguntar si quieres sobreescribir
+        Si ya hay un slot de partida con ese nombre decirle que no se puede crear la partida porque ya hay una con ese mismo nombre
+        Cuando el objeto equipado en un personaje es una pocion de curacion el personaje bebera la pocion cuando el personaje baje de la mitad de la vida sin gastar turno
+        
+        
+        Cosas que estaban en la practica y no lei:
+        
+        Ampliar el numero de slots de equipaciones a 10
+        Modificar tras crear las equipaciones
+        Poder "vender" heroes pero nunca te debes quedar con menos de 1
+        Se pueden vender items
+        Que se ofrezca al jugador la posibilidad de elegir entre varios grupos enemigos antes de comenzar el combate
+        Personajes con mayor velocidad actuarán con mayor frecuencia, incluso pudiendo repetir turno
+        Para cada hechizo se debe realizar una tirada de Inteligencia
+        Se calcula la cantidad de dados de combate con la siguiente formula
+        Fuerza final del héroe - Resistencia del monstruo = número de dados a lanzar.
+        Se lanza esa cantidad de dados.
+        Al subir nivel eliges las estadisticas a subir
+        */
+
         static void Main(string[] args)
         {
-            // Crear aventura
-            Adventure aventuraActual = new Adventure("MiAventura", 0); // Región 0 = Europa
-            aventuraActual.StartSession();
+            const int MAX_SLOTS = 3;
+            string[] slots = new string[MAX_SLOTS];
+            string[] rutasSlots = new string[MAX_SLOTS];
 
-            // Crear héroes y añadirlos a la aventura
-            Hero h1 = new Hero("Thalendir", "El Escudo", "Humano", "Guerrero", "Capitán", 5, 3, 5, 2, 4);
-            Hero h2 = new Hero("Elandra", "La Dama", "Elfa", "Maga", "Guardiana", 4, 2, 4, 5, 6);
-            Hero h3 = new Hero("Gorak", "Puño de Hierro", "Orco", "Sanador", "Chamán", 3, 5, 6, 2, 3);
+            for (int i = 0; i < MAX_SLOTS; i++)
+            {
+                rutasSlots[i] = $"slot{i + 1}.dat";
+                slots[i] = File.Exists(rutasSlots[i]) ? ObtenerNombreAventura(rutasSlots[i]) : "----------";
+            }
 
-            aventuraActual.AddHero(h1);
-            aventuraActual.AddHero(h2);
-            aventuraActual.AddHero(h3);
+            Adventure aventuraActual = null;
+            int slotSeleccionado = -1;
 
-            // Crear objetos y hechizos
-            Inventory gameInventory = aventuraActual.GetInventory();
+            while (true)
+            {
+                Console.WriteLine("=== MENÚ INICIAL ===");
+                Console.WriteLine("1. Nueva partida");
+                Console.WriteLine("2. Cargar partida");
+                Console.WriteLine("3. Salir");
+                Console.Write("Selecciona una opción: ");
+                string opcionInicio = Console.ReadLine();
+
+                if (opcionInicio == "1")
+                {
+                    Console.WriteLine("\nElige un slot de guardado (1-3):");
+                    MostrarSlots(slots);
+
+                    if (int.TryParse(Console.ReadLine(), out slotSeleccionado) && slotSeleccionado >= 1 && slotSeleccionado <= MAX_SLOTS)
+                    {
+                        Console.Write("Escribe el nombre de tu aventura: ");
+                        string nombreAventura = Console.ReadLine();
+                        aventuraActual = new Adventure(nombreAventura, 0);
+                        aventuraActual.StartSession();
+
+                        // Crear héroes
+                        aventuraActual.AddHero(new Hero("Thalendir", "El Escudo", "Humano", "Guerrero", "Capitán", 5, 3, 5, 2, 4));
+                        aventuraActual.AddHero(new Hero("Elandra", "La Dama", "Elfa", "Maga", "Guardiana", 4, 2, 4, 5, 6));
+                        aventuraActual.AddHero(new Hero("Gorak", "Puño de Hierro", "Orco", "Sanador", "Chamán", 3, 5, 6, 2, 3));
+
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]);
+                        break;
+                    }
+                }
+                else if (opcionInicio == "2")
+                {
+                    Console.WriteLine("\nPartidas guardadas:");
+                    MostrarSlots(slots);
+                    Console.Write("Selecciona un slot (1-3): ");
+
+                    if (int.TryParse(Console.ReadLine(), out slotSeleccionado) && slotSeleccionado >= 1 && slotSeleccionado <= MAX_SLOTS)
+                    {
+                        string ruta = rutasSlots[slotSeleccionado - 1];
+
+                        if (File.Exists(ruta))
+                        {
+                            aventuraActual = CargarAventura(ruta);
+                            aventuraActual.StartSession();
+                        }
+                        else
+                        {
+                            Console.WriteLine("No hay partida en ese slot. Se iniciará una nueva.");
+                            Console.Write("Nombre de la nueva aventura: ");
+                            string nombreAventura = Console.ReadLine();
+                            aventuraActual = new Adventure(nombreAventura, 0);
+                            aventuraActual.StartSession();
+
+                            aventuraActual.AddHero(new Hero("Thalendir", "El Escudo", "Humano", "Guerrero", "Capitán", 5, 3, 5, 2, 4));
+                            aventuraActual.AddHero(new Hero("Elandra", "La Dama", "Elfa", "Maga", "Guardiana", 4, 2, 4, 5, 6));
+                            aventuraActual.AddHero(new Hero("Gorak", "Puño de Hierro", "Orco", "Sanador", "Chamán", 3, 5, 6, 2, 3));
+                            GuardarAventura(aventuraActual, ruta);
+                        }
+                        break;
+                    }
+                }
+                else if (opcionInicio == "3")
+                {
+                    Console.WriteLine("¡Hasta la próxima!");
+                    return;
+                }
+            }
+
+            // --- CONTINÚA JUEGO NORMAL ---
+            Inventory gameInventory = new Inventory();
             InitializeInventory(gameInventory);
 
-            // Preparación de menú
-            bool playing = true;
-            Random rng = new Random();
+            Inventory jugadorInventory = aventuraActual.GetInventory();
             List<Equipacion> equipaciones = new List<Equipacion>();
+            Random rng = new Random();
+            Bazar bazar = new Bazar();
+            Contrabandista contrabandista = new Contrabandista();
+            EscuelaMagia escuela = new EscuelaMagia();
+            bool playing = true;
 
-            Console.WriteLine("¡Bienvenido aventurero!\n");
+            Console.WriteLine($"\n¡Bienvenido a {aventuraActual.GetAdventureName()}!\n");
 
             while (playing)
             {
@@ -1100,35 +1458,36 @@ namespace D_D_code
                 Console.WriteLine("1. Plaza del pueblo");
                 Console.WriteLine("2. Ir a Mazmorra");
                 Console.WriteLine("3. Curar en Taberna");
-                Console.WriteLine("4. Bazar (pendiente)");
-                Console.WriteLine("5. Contrabandista (pendiente)");
-                Console.WriteLine("6. Escuela de magia (pendiente)");
-                Console.WriteLine("7. Guardar aventura (pendiente)");
-                Console.WriteLine("8. Cargar aventura (pendiente)");
-                Console.WriteLine("9. Abandonar la aventura");
+                Console.WriteLine("4. Bazar");
+                Console.WriteLine("5. Contrabandista");
+                Console.WriteLine("6. Escuela de magia");
+                Console.WriteLine("7. Guardar partida");
+                Console.WriteLine("0. Abandonar la aventura");
                 Console.Write("Selección: ");
                 string option = Console.ReadLine();
-                Console.WriteLine("");
+                Console.WriteLine();
 
                 switch (option)
                 {
                     case "1":
                         TownSquare(aventuraActual, equipaciones);
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
                     case "2":
                         if (aventuraActual.GetActiveParty().Count == 0)
                         {
-                            Console.WriteLine("No hay equipación activa. Ve a la Plaza del Pueblo para preparar una.");
+                            Console.WriteLine("No hay equipación activa.");
                         }
                         else
                         {
                             Console.WriteLine("¡Expedición lista! Pulsa ENTER para comenzar la aventura.");
                             Console.ReadLine();
 
-                            int nuevoOro = Dungeon(aventuraActual.GetActiveParty(), aventuraActual.GetGold(), rng, aventuraActual.GetHeroes(), aventuraActual.GetInventory());
-                            aventuraActual.SpendGold(aventuraActual.GetGold()); // Reset
+                            int nuevoOro = Dungeon(aventuraActual.GetActiveParty(), aventuraActual.GetGold(), rng, aventuraActual.GetHeroes(), aventuraActual.GetInventory(), aventuraActual, bazar, escuela);
+                            aventuraActual.SpendGold(aventuraActual.GetGold());
                             aventuraActual.AddGold(nuevoOro);
+                            GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         }
                         break;
 
@@ -1225,45 +1584,48 @@ namespace D_D_code
                                 aventuraActual.AddGold(oroRestante);
                             }
                         }
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
-                    case "4": // Bazar
-                        Console.WriteLine("Opción Bazar seleccionada - funcionalidad pendiente.");
+                    case "4":
+                        var comunes = gameInventory.GetItems().OfType<Object>().Where(o => o.GetTier() == 1).ToList();
+                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
+                        bazar.MostrarYComprar(aventuraActual, comunes);
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
-                    case "5": // Contrabandista
-                        Console.WriteLine("Opción Contrabandista seleccionada - funcionalidad pendiente.");
+                    case "5":
+                        var unicos = gameInventory.GetItems().OfType<Object>().Where(o => o.GetTier() == 2).ToList();
+                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
+                        contrabandista.Interactuar(aventuraActual, unicos);
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
-                    case "6": // Escuela de magia
-                        Console.WriteLine("Opción Escuela de Magia seleccionada - funcionalidad pendiente.");
+                    case "6":
+                        var hechizos = gameInventory.GetItems().OfType<Spell>().ToList();
+                        Console.WriteLine("Oro: " + aventuraActual.GetGold());
+                        escuela.Interactuar(aventuraActual, hechizos);
+                        GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
                         break;
 
-                    case "7": // Guardar aventura
-                        Console.WriteLine("Opción Guardar aventura seleccionada - funcionalidad pendiente.");
-                        break;
-
-                    case "8": // Cargar aventura
-                        Console.WriteLine("Opción Cargar aventura seleccionada - funcionalidad pendiente.");
-                        break;
-
-                    case "9": // Abandonar la aventura
-                        Console.WriteLine("Se perderán todos los datos no guardados. ¿Desea continuar? (s/n)");
-                        string confirm = Console.ReadLine().ToLower();
-                        if (confirm == "s")
+                    case "7":
                         {
-                            Console.WriteLine("¡Gracias por jugar aventurero!");
+                            GuardarAventura(aventuraActual, rutasSlots[slotSeleccionado - 1]); // AUTOGUARDADO
+                            break;
+                        }
+
+                    case "0":
+                        Console.WriteLine("¿Estás seguro de que quieres salir? (s/n)");
+                        if (Console.ReadLine()?.ToLower() == "s")
+                        {
+                            Console.WriteLine("¡Hasta la próxima, aventurero!");
                             playing = false;
                             aventuraActual.EndSession();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Volviendo al menú principal...");
                         }
                         break;
 
                     default:
-                        Console.WriteLine("Opción inválida.\n");
+                        Console.WriteLine("Opción no válida.\n");
                         break;
                 }
             }
@@ -1271,22 +1633,22 @@ namespace D_D_code
         static void InitializeInventory(Inventory inventory)
         {
             // Objetos comunes (Físicos)
-            inventory.AddItem(new Object("Espada de Acero", 20, 10, 1, false, false, 2, 0));
-            inventory.AddItem(new Object("Espada Roma", 5, 1, 1, false, false, 1, 0));
-            inventory.AddItem(new Object("Escudo de Madera", 15, 8, 1, false, false, 0, 2));
+            inventory.AddItem(new Object("Espada de Acero", 20, 10, 1, false, 2, 0, 0, 0, 0, 1));  // tier = 1
+            inventory.AddItem(new Object("Espada Roma", 5, 1, 1, false, 1, 0, 0, 0, 0, 1));
+            inventory.AddItem(new Object("Escudo de Madera", 15, 8, 1, false, 0, 2, 0, 0, 2, 1));
 
             // Objetos comunes (Mágicos)
-            inventory.AddItem(new Object("Escudo Mágico", 50, 25, 1, true, false, 0, 3));
-            inventory.AddItem(new Object("Poción de Curación", 10, 5, 0, false, true, 0, 2));
-            inventory.AddItem(new Object("Poción de Constitución", 15, 5, 0, true, true, 0, 1));
+            inventory.AddItem(new Object("Escudo Mágico", 50, 25, 1, true, 0, 3, 0, 0, 2, 1));
+            inventory.AddItem(new Object("Poción de Curación", 10, 5, 0, false, 0, 0, 0, 0, 2, 1));
+            inventory.AddItem(new Object("Poción de Constitución", 15, 5, 0, true, 0, 1, 0, 0, 0, 1));
 
             // Objetos únicos (Físicos)
-            inventory.AddItem(new Object("Espada Gigante", 500, 100, 2, false, false, 6, 0));
-            inventory.AddItem(new Object("Daga Oscura", 700, 600, 1, false, false, 4, 0));
+            inventory.AddItem(new Object("Espada Gigante", 500, 100, 2, false, 6, 0, 0, 0, 0, 2));
+            inventory.AddItem(new Object("Daga Oscura", 700, 600, 1, false, 4, 0, 0, 0, 0, 2));
 
             // Objetos únicos (Mágicos)
-            inventory.AddItem(new Object("Espada Legendaria", 1000, 90, 2, true, false, 6, 0));
-            inventory.AddItem(new Object("Escudo de la Eternidad", 160, 80, 2, true, false, 0, 4));
+            inventory.AddItem(new Object("Espada Legendaria", 1000, 90, 2, true, 6, 0, 0, 0, 0, 2));
+            inventory.AddItem(new Object("Escudo de la Eternidad", 160, 80, 2, true, 0, 4, 0, 0, 0, 2));
 
             // Hechizos
             inventory.AddItem(new Spell("Hechizo de Fuego", 30, 10, 0, 2, 3));
@@ -1327,18 +1689,26 @@ namespace D_D_code
                                 Console.WriteLine("Clase: " + h.GetClass());
                                 Console.WriteLine("Lore: " + h.GetLore());
                                 Console.WriteLine("Reclutado el: " + h.GetRecruitmentTime());
-                                Console.WriteLine("Vida: " + h.GetActualLife() + "/" + h.GetHP());
+                                Console.WriteLine("Vida: " + h.GetActualLife() + "/" + h.GetHP()); // Asegúrate de usar GetActualLife para la vida actual
                                 Console.WriteLine("Fuerza: " + h.GetStrength());
                                 Console.WriteLine("Constitución: " + h.GetConstitution());
                                 Console.WriteLine("Inteligencia: " + h.GetIntelligence());
                                 Console.WriteLine("Velocidad: " + h.GetSpeed());
                                 Console.WriteLine("Nivel: " + h.GetLevel());
                                 Console.WriteLine("Experiencia: " + h.GetXP() + "/100");
+
+                                // Aquí es donde verificamos si el héroe tiene un objeto equipado
+                                if (h.GetEquippedItem() != null) // Si tiene un ítem equipado
+                                {
+                                    Console.WriteLine($"Objeto equipado: {h.GetEquippedItem().GetName()}");
+                                }
+
                                 Console.WriteLine();
                             }
 
                             break;
                         }
+
 
                     case "2":
                         {
@@ -1349,11 +1719,79 @@ namespace D_D_code
                             break;
                         }
 
-                    case "3":
+                    case "3": // Menú de inventario
+                        Console.WriteLine("=== INVENTARIO ===");
+
+                        // Mostrar objetos disponibles
+                        List<Item> objetos = adventure.GetInventory().GetItems();
+                        if (objetos.Count == 0)
                         {
-                            adventure.GetInventory().ShowInventory();
-                            break;
+                            Console.WriteLine("No tienes objetos en el inventario.");
                         }
+                        else
+                        {
+                            Console.WriteLine("=== OBJETOS DISPONIBLES ===");
+                            for (int i = 0; i < objetos.Count; i++)
+                            {
+                                Console.WriteLine($"{i + 1}. {objetos[i].GetName()}");
+                            }
+                            Console.WriteLine("[0] Volver al menú principal.");
+                            Console.Write("Selecciona el objeto que deseas ver o equipar: ");
+                            string input = Console.ReadLine();
+
+                            if (int.TryParse(input, out int objetoIndex) && objetoIndex >= 1 && objetoIndex <= objetos.Count)
+                            {
+                                Item objetoSeleccionado = objetos[objetoIndex - 1];
+
+                                // Preguntar qué desea hacer con el objeto
+                                Console.WriteLine("¿Qué deseas hacer con este objeto?");
+                                Console.WriteLine("1. Ver detalles");
+                                Console.WriteLine("2. Equipar objeto");
+                                Console.WriteLine("0. Volver al inventario");
+                                string action = Console.ReadLine();
+
+                                switch (action)
+                                {
+                                    case "1":
+                                        objetoSeleccionado.ShowInfo(); // Mostrar información del objeto
+                                        break;
+
+                                    case "2":
+                                        // Mostrar lista de héroes para seleccionar a quién equipar
+                                        List<Hero> heroes = adventure.GetHeroes();
+                                        Console.WriteLine("Selecciona el héroe al que deseas equipar el objeto:");
+                                        for (int i = 0; i < heroes.Count; i++)
+                                        {
+                                            Console.WriteLine($"{i + 1}. {heroes[i].GetName()}");
+                                        }
+
+                                        Console.Write("Selecciona el héroe: ");
+                                        string inputHero = Console.ReadLine();
+                                        if (int.TryParse(inputHero, out int heroIndex) && heroIndex >= 1 && heroIndex <= heroes.Count)
+                                        {
+                                            Hero selectedHero = heroes[heroIndex - 1];
+
+                                            // Usamos el método SetItem para equipar el objeto
+                                            selectedHero.SetItem(objetoSeleccionado);
+                                            selectedHero.GetStrength();
+                                        }
+                                        break;
+
+                                    case "0":
+                                        Console.WriteLine("Volviendo al inventario...");
+                                        break;
+
+                                    default:
+                                        Console.WriteLine("Opción no válida.");
+                                        break;
+                                }
+                            }
+                            else if (input == "0")
+                            {
+                                Console.WriteLine("Volviendo al menú...");
+                            }
+                        }
+                        break;
 
                     case "4":
                         {
@@ -1659,19 +2097,16 @@ namespace D_D_code
 
             return totalGold;
         }
-        static int Dungeon(List<Hero> group, int totalGold, Random rng, List<Hero> aliveHeroes, Inventory gameInventory)
+        static int Dungeon(List<Hero> activeParty, int totalGold, Random rng, List<Hero> allHeroes, Inventory gameInventory, Adventure aventuraActual, Bazar bazar, EscuelaMagia escuela)
         {
+            List<Hero> group = activeParty.ToList(); // Trabajamos con copia para no tocar la equipación original
             List<List<Enemy>> enemyWaves = new List<List<Enemy>>();
 
             enemyWaves.Add(new List<Enemy> { new Enemy("Gólem", 3, 2, 5, 3, 5, 15, true, true), new Enemy("Esqueleto", 2, 1, 3, 4, 3, 10, false, false) });
             enemyWaves.Add(new List<Enemy> { new Enemy("Orco", 4, 2, 6, 3, 7, 20, true, true), new Enemy("Mago Oscuro", 3, 3, 4, 5, 6, 25, false, false) });
 
             int initialGold = totalGold;
-            Dictionary<Hero, int> originalStrength = new Dictionary<Hero, int>();
-            foreach (Hero hero in group)
-            {
-                originalStrength[hero] = hero.GetStrength();
-            }
+            Dictionary<Hero, int> originalStrength = group.ToDictionary(hero => hero, hero => hero.GetStrength());
 
             foreach (List<Enemy> enemies in enemyWaves)
             {
@@ -1680,7 +2115,6 @@ namespace D_D_code
 
                 while (isBattleActive)
                 {
-                    // ✅ MOSTRAR TURNOS ANTES DE ACCIONES
                     List<object> combinedTurnOrder = new List<object>();
                     combinedTurnOrder.AddRange(group);
                     combinedTurnOrder.AddRange(enemies);
@@ -1722,9 +2156,7 @@ namespace D_D_code
                             {
                                 Console.WriteLine("Elige un monstruo para atacar:");
                                 for (int i = 0; i < enemies.Count; i++)
-                                {
                                     Console.WriteLine($"{i + 1}. {enemies[i].GetName()} (Vida: {enemies[i].GetHealth()})");
-                                }
 
                                 Console.Write("Selecciona: ");
                                 if (int.TryParse(Console.ReadLine(), out int selectedEnemyIndex) &&
@@ -1790,7 +2222,7 @@ namespace D_D_code
                         }
                     }
 
-                    // Ataques de los héroes
+                    // Ataques de héroes
                     pendingAttacks.Sort((a, b) => b.hero.GetSpeed().CompareTo(a.hero.GetSpeed()));
                     foreach (var attack in pendingAttacks)
                     {
@@ -1814,7 +2246,7 @@ namespace D_D_code
                         {
                             if (attackPower >= enemy.GetHealth())
                             {
-                                Console.WriteLine("¡" + enemy.GetName() + " ha sido derrotado!");
+                                Console.WriteLine($"¡{enemy.GetName()} ha sido derrotado!");
                                 totalGold += enemy.GetMoney();
                                 enemies.Remove(enemy);
 
@@ -1843,7 +2275,7 @@ namespace D_D_code
                         int attacks = enemy.GetSpeed() - target.GetSpeed() >= 5 ? 2 : 1;
 
                         if (attacks == 2)
-                            Console.WriteLine($"{enemy.GetName()} es mucho más rápido que {target.GetName()} y ataca DOS veces.");
+                            Console.WriteLine($"{enemy.GetName()} ataca DOS veces a {target.GetName()}.");
 
                         for (int i = 0; i < attacks; i++)
                         {
@@ -1855,8 +2287,7 @@ namespace D_D_code
                             if (remainingHP <= 0)
                             {
                                 Console.WriteLine($"{target.GetName()} ha sido derrotado.");
-                                aliveHeroes.Remove(target);
-                                group.Remove(target);
+                                group.Remove(target); // Remover de la copia local
                                 break;
                             }
                             else
@@ -1897,18 +2328,20 @@ namespace D_D_code
                         Console.WriteLine();
                     }
 
-                    // ✅ SI TODOS MUEREN → HEALER Y SALIR
                     if (group.Count == 0)
                     {
                         Console.WriteLine("¡Todos los héroes han caído!");
                         isBattleActive = false;
-                        totalGold = Healer(totalGold, group);
-                        return totalGold;
+
+                        int oroTrasCuracion = Healer(totalGold, allHeroes);
+                        aventuraActual.SpendGold(aventuraActual.GetGold());  // reset a 0
+                        aventuraActual.AddGold(oroTrasCuracion);             // oro tras curación
+                        return oroTrasCuracion;
                     }
                 }
             }
 
-            // Restaurar vida y fuerza
+            // Restaurar vida y fuerza de los que no murieron
             foreach (Hero h in group)
             {
                 if (h.GetActualLife() > h.GetHP())
@@ -1918,7 +2351,48 @@ namespace D_D_code
                     h.SetStrength(originalStrength[h]);
             }
 
+            // Actualizar tiendas
+            bazar.Actualizar(UtilidadesTienda.FiltrarObjetosPorTipo(aventuraActual.GetInventory().GetItems(), false, true));
+            escuela.Actualizar(UtilidadesTienda.ObtenerHechizos(aventuraActual.GetInventory().GetItems()));
+
             return totalGold;
+        }
+        public static void GuardarAventura(Adventure aventura, string ruta)
+        {
+            using (FileStream stream = new FileStream(ruta, FileMode.Create))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(stream, aventura);
+            }
+        }
+        public static Adventure CargarAventura(string ruta)
+        {
+            using (FileStream stream = new FileStream(ruta, FileMode.Open))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                return (Adventure)formatter.Deserialize(stream);
+            }
+        }
+        static void MostrarSlots(string[] nombres)
+        {
+            for (int i = 0; i < nombres.Length; i++)
+                Console.WriteLine($"{i + 1}. {nombres[i]}");
+        }
+        static string ObtenerNombreAventura(string ruta)
+        {
+            try
+            {
+                using (FileStream fs = new FileStream(ruta, FileMode.Open))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    Adventure aventura = (Adventure)bf.Deserialize(fs);
+                    return aventura.GetAdventureName();
+                }
+            }
+            catch
+            {
+                return "CORRUPTO";
+            }
         }
     }
 }
