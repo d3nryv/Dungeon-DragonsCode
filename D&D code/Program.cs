@@ -118,17 +118,28 @@ namespace D_D_code
             {
                 if (itemName.Contains("Curación"))
                 {
-                    int curacion = 5; // Puedes ajustar la cantidad
-                    int nuevaVida = Math.Min(targetHero.GetActualLife() + curacion, targetHero.GetHP());
+                    int cantidadCurada = 10;
+                    int vidaActual = targetHero.GetActualLife();
+                    int vidaMaxima = targetHero.GetHP();
+                    int nuevaVida = Math.Min(vidaActual + cantidadCurada, vidaMaxima);
+
                     targetHero.SetActualHP(nuevaVida);
-                    Console.WriteLine($"{targetHero.GetName()} recupera {curacion} puntos de vida.");
+                    Console.WriteLine($"{targetHero.GetName()} recupera {nuevaVida - vidaActual} puntos de vida.");
                 }
-                else if (itemName.Contains("Fortalecimiento"))
+                else if (itemName.Contains("Constitución"))
                 {
                     targetHero.SetConstitution(targetHero.GetConstitution() + 1);
                     Console.WriteLine($"{targetHero.GetName()} gana +1 a Constitución.");
                 }
-                // Aquí puedes agregar más efectos por nombre
+                else if (itemName.Contains("Fuerza"))
+                {
+                    targetHero.SetStrength(targetHero.GetStrength() + 1);
+                    Console.WriteLine($"{targetHero.GetName()} gana +1 a Fuerza.");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"{GetName()} no tiene un efecto definido.");
             }
         }
 
@@ -322,12 +333,11 @@ namespace D_D_code
     [Serializable]
     public class Hero
     {
-        Item equippedItem;
-        string name, title, race, heroClass, lore;
-        DateTime recruitmentTime;
-        int strength, constitution, hp, intelligence, speed;
-        int actualHP, level, xp;
-        List<Item> equippedItems = new List<Item>();
+        private Item equippedItem;
+        private string name, title, race, heroClass, lore;
+        private DateTime recruitmentTime;
+        private int strength, constitution, hp, intelligence, speed;
+        private int actualHP, level, xp;
 
         public Hero(string intName, string intTitle, string intRace, string intClass, string intLore, int intStrength, int intConstitution, int intHP, int intIntelligence, int intSpeed)
         {
@@ -342,7 +352,6 @@ namespace D_D_code
             intelligence = intIntelligence;
             speed = intSpeed;
 
-            // Modificadores por raza
             switch (race)
             {
                 case "Humano": hp += 1; intelligence += 1; break;
@@ -351,7 +360,6 @@ namespace D_D_code
                 case "Enano": constitution += 2; hp += 1; break;
             }
 
-            // Modificadores por clase
             switch (heroClass)
             {
                 case "Guerrero": strength += 2; constitution += 1; break;
@@ -367,66 +375,86 @@ namespace D_D_code
         }
 
         // Getters
-        public string GetName() => name;
-        public string GetTitle() => title;
-        public string GetRace() => race;
-        public string GetClass() => heroClass;
-        public string GetLore() => lore;
-        public DateTime GetRecruitmentTime() => recruitmentTime;
-        public int GetStrength() => strength;
-        public int GetConstitution() => constitution;
-        public int GetHP() => hp;
-        public int GetIntelligence() => intelligence;
-        public int GetSpeed() => speed;
-        public int GetActualLife() => actualHP;
-        public int GetLevel() => level;
-        public int GetXP() => xp;
-        public List<Item> GetEquippedItems() => equippedItems;
+        public string GetName() { return name; }
+        public string GetTitle() { return title; }
+        public string GetRace() { return race; }
+        public string GetClass() { return heroClass; }
+        public string GetLore() { return lore; }
+        public DateTime GetRecruitmentTime() { return recruitmentTime; }
+        public int GetStrength() { return strength; }
+        public int GetConstitution() { return constitution; }
+        public int GetHP() { return hp; }
+        public int GetIntelligence() { return intelligence; }
+        public int GetSpeed() { return speed; }
+        public int GetActualLife() { return actualHP; }
+        public int GetLevel() { return level; }
+        public int GetXP() { return xp; }
+        public Item GetEquippedItem() { return equippedItem; }
 
-        // Equipar ítem (respetando 2 manos)
-        public void EquipItem(Item item)
+        // Setters
+        public void SetName(string newName) { name = newName; }
+        public void SetTitle(string newTitle) { title = newTitle; }
+        public void SetRace(string newRace) { race = newRace; }
+        public void SetClass(string newClass) { heroClass = newClass; }
+        public void SetLore(string newLore) { lore = newLore; }
+        public void SetStrength(int newStrength) { strength = newStrength; }
+        public void SetConstitution(int newConstitution) { constitution = newConstitution; }
+        public void SetHP(int newHP) { hp = newHP; }
+        public void SetIntelligence(int newIntelligence) { intelligence = newIntelligence; }
+        public void SetSpeed(int newSpeed) { speed = newSpeed; }
+        public void SetActualHP(int newActualHP) { actualHP = newActualHP; }
+        public void SetLevel(int newLevel) { level = newLevel; }
+        public void SetXP(int newXP) { xp = newXP; }
+
+        // Equipar un objeto único
+        public void SetItem(Item newItem)
         {
-            int totalHands = GetEquippedHands();
-            int itemHands = item.GetHandsRequired();
-
-            if (totalHands + itemHands > 2)
+            if (equippedItem != null)
             {
-                Console.WriteLine($"No puedes equipar {item.GetName()} porque superas el límite de 2 manos.");
-                return;
+                Console.WriteLine($"{name} ya tiene equipado {equippedItem.GetName()}. ¿Reemplazar con {newItem.GetName()}? (s/n)");
+                string respuesta = Console.ReadLine().ToLower();
+                if (respuesta != "s")
+                {
+                    Console.WriteLine("El objeto no ha sido equipado.");
+                    return;
+                }
+
+                // Remover bonificaciones del objeto actual
+                strength -= equippedItem.GetStrengthBonus();
+                constitution -= equippedItem.GetConstitutionBonus();
+                hp -= equippedItem.GetHpBonus();
+                speed -= equippedItem.GetSpeedBonus();
+                actualHP -= equippedItem.GetHpBonus();
             }
 
-            equippedItems.Add(item);
-            strength += item.GetStrengthBonus();
-            constitution += item.GetConstitutionBonus();
-            intelligence += 0; // si quieres añadirlo
-            speed += item.GetSpeedBonus();
-            hp += item.GetHpBonus();
-            actualHP += item.GetHpBonus();
+            equippedItem = newItem;
 
-            Console.WriteLine($"{name} ha equipado {item.GetName()}.");
+            strength += newItem.GetStrengthBonus();
+            constitution += newItem.GetConstitutionBonus();
+            hp += newItem.GetHpBonus();
+            speed += newItem.GetSpeedBonus();
+            actualHP += newItem.GetHpBonus();
+
+            Console.WriteLine($"{newItem.GetName()} ha sido equipado a {name}.");
         }
 
-        public void UnequipItem(Item item)
+        public void RemoveItem()
         {
-            if (equippedItems.Contains(item))
+            if (equippedItem != null)
             {
-                equippedItems.Remove(item);
-                strength -= item.GetStrengthBonus();
-                constitution -= item.GetConstitutionBonus();
-                speed -= item.GetSpeedBonus();
-                hp -= item.GetHpBonus();
-                actualHP -= item.GetHpBonus();
-                Console.WriteLine($"{name} se ha quitado {item.GetName()}.");
+                strength -= equippedItem.GetStrengthBonus();
+                constitution -= equippedItem.GetConstitutionBonus();
+                hp -= equippedItem.GetHpBonus();
+                speed -= equippedItem.GetSpeedBonus();
+                actualHP -= equippedItem.GetHpBonus();
+
+                Console.WriteLine($"{name} ya no tiene ningún objeto equipado.");
+                equippedItem = null;
             }
             else
             {
-                Console.WriteLine($"{name} no tiene equipado {item.GetName()}.");
+                Console.WriteLine($"{name} no tiene ningún objeto equipado.");
             }
-        }
-
-        public int GetEquippedHands()
-        {
-            return equippedItems.Sum(i => i.GetHandsRequired());
         }
 
         // Subida de nivel
@@ -437,8 +465,15 @@ namespace D_D_code
             {
                 xp -= 100;
                 level++;
-                int oldHP = hp, oldStrength = strength, oldSpeed = speed;
-                hp++; strength += 2; speed++; actualHP = hp;
+
+                int oldHP = hp;
+                int oldStrength = strength;
+                int oldSpeed = speed;
+
+                hp += 1;
+                strength += 2;
+                speed += 1;
+                actualHP = hp;
 
                 Console.WriteLine($"¡{name} ha subido al nivel {level}!");
                 Console.WriteLine($"HP -> {oldHP} +1");
@@ -446,150 +481,6 @@ namespace D_D_code
                 Console.WriteLine($"Speed -> {oldSpeed} +1\n");
             }
         }
-
-
-        // Setters
-        public void SetName(string newName)
-        {
-            name = newName;
-        }
-
-        public void SetTitle(string newTitle)
-        {
-            title = newTitle;
-        }
-
-        public void SetRace(string newRace)
-        {
-            race = newRace;
-        }
-
-        public void SetClass(string newClass)
-        {
-            heroClass = newClass;
-        }
-
-        public void SetLore(string newLore)
-        {
-            lore = newLore;
-        }
-
-        public void SetStrength(int newStrength)
-        {
-            strength = newStrength;
-        }
-
-        public void SetConstitution(int newConstitution)
-        {
-            constitution = newConstitution;
-        }
-
-        public void SetHP(int newHP)
-        {
-            hp = newHP;
-        }
-
-        public void SetIntelligence(int newIntelligence)
-        {
-            intelligence = newIntelligence;
-        }
-
-        public void SetSpeed(int newSpeed)
-        {
-            speed = newSpeed;
-        }
-
-        public void SetActualHP(int newActualHP)
-        {
-            actualHP = newActualHP;
-        }
-
-        public void SetLevel(int newLevel)
-        {
-            level = newLevel;
-        }
-
-        public void SetXP(int newXP)
-        {
-            xp = newXP;
-        }
-
-        public Item GetEquippedItem()
-        {
-            return equippedItem; // Devuelve el ítem actualmente equipado, o null si no hay ninguno.
-        }
-
-        public void RemoveItem()
-        {
-            if (equippedItem != null)
-            {
-                // Remover las estadísticas del héroe basadas en el ítem
-                strength -= equippedItem.GetStrengthBonus();
-                constitution -= equippedItem.GetConstitutionBonus();
-                hp -= equippedItem.GetHpBonus();
-                speed -= equippedItem.GetSpeedBonus();
-                actualHP -= equippedItem.GetHpBonus(); // Ajustamos la vida real
-
-                equippedItem = null;
-                Console.WriteLine($"{name} ya no tiene ningún objeto equipado.");
-            }
-            else
-            {
-                Console.WriteLine($"{name} no tiene ningún objeto equipado.");
-            }
-        }
-
-        public void SetItem(Item item)
-        {
-            // Verificar si el héroe ya tiene un objeto equipado
-            if (equippedItem != null)
-            {
-                Console.WriteLine($"{name} ya tiene el objeto {equippedItem.GetName()} equipado.");
-                Console.WriteLine($"¿Deseas reemplazar el objeto {equippedItem.GetName()} con {item.GetName()}? (s/n)");
-                string respuesta = Console.ReadLine().ToLower();
-
-                if (respuesta == "s")
-                {
-                    // Remover las bonificaciones del ítem anterior
-                    strength -= equippedItem.GetStrengthBonus();
-                    constitution -= equippedItem.GetConstitutionBonus();
-                    hp -= equippedItem.GetHpBonus();
-                    speed -= equippedItem.GetSpeedBonus();
-                    actualHP -= equippedItem.GetHpBonus(); // Ajustamos la vida real
-
-                    // Equipar el nuevo ítem
-                    equippedItem = item;
-
-                    // Agregar las bonificaciones del nuevo ítem
-                    strength += item.GetStrengthBonus();
-                    constitution += item.GetConstitutionBonus();
-                    hp += item.GetHpBonus();
-                    speed += item.GetSpeedBonus();
-                    actualHP += item.GetHpBonus(); // Aseguramos que se actualice la vida real
-
-                    Console.WriteLine($"{item.GetName()} ha sido equipado a {name}.");
-                }
-                else
-                {
-                    Console.WriteLine("El objeto no ha sido equipado.");
-                }
-            }
-            else
-            {
-                // Si no tiene un ítem equipado, lo equipamos directamente
-                equippedItem = item;
-
-                // Agregar las bonificaciones del ítem
-                strength += item.GetStrengthBonus();
-                constitution += item.GetConstitutionBonus();
-                hp += item.GetHpBonus();
-                speed += item.GetSpeedBonus();
-                actualHP += item.GetHpBonus(); // Aseguramos que se actualice la vida real
-
-                Console.WriteLine($"{item.GetName()} ha sido equipado a {name}.");
-            }
-        }
-
     }
 
     [Serializable]
@@ -1715,7 +1606,13 @@ namespace D_D_code
                                         {
                                             Hero selectedHero = heroes[heroIndex - 1];
 
-                                            // Usamos el método SetItem para equipar el objeto
+                                            Item itemPrevio = selectedHero.GetEquippedItem();
+                                            if (itemPrevio != null)
+                                            {
+                                                Console.WriteLine($"{selectedHero.GetName()} tenía equipado {itemPrevio.GetName()}, se devuelve al inventario.");
+                                                adventure.GetInventory().AddItem(itemPrevio);
+                                            }
+
                                             selectedHero.SetItem(objetoSeleccionado);
                                             adventure.GetInventory().RemoveItem(objetoSeleccionado);
                                         }
@@ -2236,24 +2133,27 @@ namespace D_D_code
                             // Aplicar daño
                             target.SetActualHP(Math.Max(remainingHP, 0));
 
-                            // Autouso de pociones si sigue vivo
-                            if (target.GetActualLife() > 0)
+                            // Autouso de poción si la vida baja del 50% y tiene una equipada
+                            if (target.GetActualLife() > 0 && target.GetEquippedItem() != null)
                             {
-                                foreach (var item in target.GetEquippedItems())
+                                Item pocion = target.GetEquippedItem();
+
+                                if (pocion.GetIsConsumable())
                                 {
-                                    if (item.GetItemType() == "Pocion")
+                                    double porcentaje = (double)target.GetActualLife() / target.GetHP();
+                                    if (porcentaje <= 0.5)
                                     {
-                                        Console.WriteLine($"{target.GetName()} se toma automáticamente {item.GetName()} tras recibir daño.");
-                                        item.Use(target, null);
-                                        target.UnequipItem(item);
-                                        aventuraActual.GetInventory().RemoveItem(item);
-                                        break;
+                                        Console.WriteLine($"{target.GetName()} se toma automáticamente {pocion.GetName()} al estar por debajo del 50% de vida.");
+
+                                        pocion.Use(target, null);
+                                        target.RemoveItem();
+                                        aventuraActual.GetInventory().RemoveItem(pocion);
                                     }
                                 }
 
                                 Console.WriteLine($"Vida restante de {target.GetName()}: {target.GetActualLife()}/{target.GetHP()}");
                             }
-                            else
+                            else if (target.GetActualLife() <= 0)
                             {
                                 Console.WriteLine($"{target.GetName()} ha sido derrotado.");
                                 group.Remove(target);
@@ -2298,10 +2198,11 @@ namespace D_D_code
                         isBattleActive = false;
 
                         int oroTrasCuracion = Healer(totalGold, allHeroes);
-                        aventuraActual.SpendGold(aventuraActual.GetGold());  // reset a 0
-                        aventuraActual.AddGold(oroTrasCuracion);             // oro tras curación
+                        aventuraActual.SpendGold(aventuraActual.GetGold());
+                        aventuraActual.AddGold(oroTrasCuracion);
                         return oroTrasCuracion;
                     }
+
                 }
             }
 
