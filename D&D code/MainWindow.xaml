@@ -1,0 +1,347 @@
+<Window x:Class="VisualD_D.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VisualD_D" Height="500" Width="837">
+    <Grid>
+
+        <!-- MENÚ PRINCIPAL -->
+        <StackPanel x:Name="MainMenu" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible">
+            <Label Content="¡Crea tu propia historia aventurero!" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            <Button Content="Nueva Aventura" Width="200" Height="50" Click="NewAdventureClick"/>
+            <Button Content="Continua donde lo dejaste" Width="200" Height="50" Margin="0,10,0,0" Click="ContinueAdventureClick"/>
+            <Button Content="Abandonar" Width="200" Height="50" Margin="0,10,0,0" Click="ExitClick"/>
+        </StackPanel>
+
+        <!-- MENÚ DE SLOTS -->
+        <StackPanel x:Name="SlotMenu" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label Content="Elige tu aventura" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" Margin="0,0,0,20"/>
+            <Button x:Name="SlotButton1" Content="Slot 1" Width="200" Height="50" Click="SlotClick"/>
+            <Button x:Name="SlotButton2" Content="Slot 2" Width="200" Height="50" Margin="0,10,0,0" Click="SlotClick"/>
+            <Button x:Name="SlotButton3" Content="Slot 3" Width="200" Height="50" Margin="0,10,0,0" Click="SlotClick"/>
+        </StackPanel>
+
+        <!-- CUADRO DE DIÁLOGO CONFIRMACIÓN -->
+        <StackPanel x:Name="ConfirmationDialog" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock x:Name="DialogText" Text="¿Seguro que deseas sobreescribir?" Foreground="Black" TextAlignment="Center" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Sí" Width="60" Margin="10,0" Click="YesClick"/>
+                <Button Content="No" Width="60" Margin="10,0" Click="NoClick"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- PANEL DE CREAR AVENTURA -->
+        <StackPanel x:Name="CrearAventuraPanel" Visibility="Collapsed">
+            <StackPanel>
+                <Label Content="Nombre de la aventura *"/>
+                <TextBox x:Name="NombreAventuraBox" Width="780" Height="30"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,10,0,0">
+                <StackPanel Width="390">
+                    <Label Content="Nombre del héroe *"/>
+                    <TextBox x:Name="NombreHeroeBox" Width="380" Height="30"/>
+                </StackPanel>
+                <StackPanel Width="390" Margin="10,0,0,0">
+                    <Label Content="Título del héroe"/>
+                    <TextBox x:Name="TituloHeroeBox" Width="380" Height="30"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Raza *"/>
+                <ComboBox x:Name="RazaCombo" Width="100" Height="30">
+                    <ComboBoxItem Content="Humano"/>
+                    <ComboBoxItem Content="Elfo"/>
+                    <ComboBoxItem Content="Orco"/>
+                    <ComboBoxItem Content="Enano"/>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Clase *"/>
+                <ComboBox x:Name="ClaseCombo" Width="100" Height="30">
+                    <ComboBoxItem Content="Guerrero"/>
+                    <ComboBoxItem Content="Mago"/>
+                    <ComboBoxItem Content="Sanador"/>
+                    <ComboBoxItem Content="Ladrón"/>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Rol o trasfondo del héroe"/>
+                <TextBox x:Name="LoreBox" Width="300" Height="30"/>
+            </StackPanel>
+
+            <TextBlock x:Name="PuntosRestantesTextBlock" Text="Puntos restantes: 15" Margin="0,10,0,0"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="BtnInteligencia" Content="Inteligencia: 1" Width="120" Height="30" Click="IncrementarStat"/>
+                <Button x:Name="BtnVida" Content="Vida: 1" Width="120" Height="30" Margin="10,0" Click="IncrementarStat"/>
+                <Button x:Name="BtnConstitucion" Content="Constitución: 1" Width="120" Height="30" Margin="10,0" Click="IncrementarStat"/>
+                <Button x:Name="BtnFuerza" Content="Fuerza: 1" Width="120" Height="30" Margin="10,0" Click="IncrementarStat"/>
+                <Button x:Name="BtnVelocidad" Content="Velocidad: 1" Width="120" Height="30" Margin="10,0" Click="IncrementarStat"/>
+            </StackPanel>
+
+            <Button Content="Crear aventura" Width="200" Height="50" Click="ConfirmarCrearAventura" Margin="0,10,0,0"/>
+        </StackPanel>
+
+        <!-- LABEL DE AVENTURA -->
+        <Label x:Name="AdventureLabel" Content="" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="14"/>
+
+        <!-- PANEL DE AVENTURA -->
+        <Grid x:Name="CiudadStack" Visibility="Collapsed">
+            <Label Content="¡Bienvenido a Drakenshire!" HorizontalAlignment="Left" Margin="317,22,0,0" VerticalAlignment="Top" Width="227"/>
+
+            <Rectangle HorizontalAlignment="Left" Height="176" Margin="241,148,0,0" Stroke="Black" VerticalAlignment="Top" Width="303"/>
+            <Rectangle HorizontalAlignment="Center" Height="125" Margin="0,324,0,0" Stroke="Black" VerticalAlignment="Top" Width="52"/>
+
+            <Label Content="Oro:" VerticalAlignment="Top" Margin="10,4,755,0"/>
+            <Label x:Name="GoldText" Content="TextBox" Width="60" Height="25" Margin="50,5,690,404"/>
+
+            <Button Content="Mazmorra" HorizontalAlignment="Left" Margin="544,136,0,253" Height="45" Width="64" Click="DungeonClick"/>
+            <Button Content="Contrabandista" HorizontalAlignment="Left" Margin="153,10,0,0" Height="52" Width="87" Click="SmugglerClick"/>
+            <Button Content="Escuela de&#xD;&#xA;magia" HorizontalAlignment="Left" Margin="152,257,0,125" Height="52" Width="89" Click="MagicSchoolClick"/>
+            <Button Content="Centro&#xD;&#xA;Del&#xD;&#xA;Pueblo" HorizontalAlignment="Center" Width="72" Height="57" Click="TownSquareClick"/>
+            <Button Content="Bazar" HorizontalAlignment="Left" Margin="153,133,0,250" Height="51" Width="88" Click="Bazaar"/>
+            <Button Content="Taberna" HorizontalAlignment="Left" Margin="544,257,0,126" Height="51" Width="79" Click="HealerClick"/>
+
+            <Button Content="Guardar" Width="93" Height="32" Click="SaveClick" Margin="707,365,0,37"/>
+            <Button Content="Guardar y Salir" Width="159" Height="32" Click="SaveExitClick" Margin="641,400,0,2"/>
+        </Grid>
+
+        <!-- PANEL BAZAR -->
+        <Grid x:Name="BazarStack" Visibility="Collapsed">
+            <Label Content="Vendedor" HorizontalAlignment="Left" Margin="394,102,0,0" VerticalAlignment="Top"/>
+
+            <Rectangle HorizontalAlignment="Left" Height="375" Margin="104,10,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="58" Margin="104,212,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="128" Margin="382,84,0,0" Stroke="Black" VerticalAlignment="Top" Width="80"/>
+
+            <Button x:Name="NombreItem1" Content="NombreItem1" HorizontalAlignment="Left" Margin="190,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyItem1"/>
+            <Button x:Name="NombreItem2" Content="NombreItem2" HorizontalAlignment="Left" Margin="299,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyItem2"/>
+            <Button x:Name="NombreItem3" Content="NombreItem3" HorizontalAlignment="Left" Margin="400,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyItem3"/>
+            <Button x:Name="NombreItem4" Content="NombreItem4" HorizontalAlignment="Left" Margin="506,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyItem4"/>
+            <Button x:Name="NombreItem5" Content="NombreItem5" HorizontalAlignment="Left" Margin="614,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyItem5"/>
+
+            <Label x:Name="GoldItem1" HorizontalAlignment="Left" Margin="190,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="GoldItem2" HorizontalAlignment="Left" Margin="299,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="GoldItem3" HorizontalAlignment="Left" Margin="400,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="GoldItem4" HorizontalAlignment="Left" Margin="506,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="GoldItem5" HorizontalAlignment="Left" Margin="614,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+
+            <Label Content="Oro:" VerticalAlignment="Top" Margin="8,10,703,0" Height="25"/>
+            <Label x:Name="GoldTextBazar" Content="TextBox" Width="60" Height="25" Margin="39,10,701,399"/>
+
+            <Button Content="Volver atrás" HorizontalAlignment="Left" Margin="0,390,0,0" VerticalAlignment="Top" Height="44" Width="97" Click="GoToCity"/>
+        </Grid>
+
+        <!-- PANEL DEL CONTRABANDISTA -->
+        <Grid x:Name="ContrabandistaStack" Visibility="Collapsed">
+            <Label Content="Oro:" VerticalAlignment="Top" Margin="8,10,703,0" Height="25"/>
+            <Label x:Name="GoldTextSmuggler" Content="TextBox" Width="60" Height="25" Margin="39,10,701,399"/>
+            <Label Content="Contrabandista" HorizontalAlignment="Left" Margin="394,102,0,0" VerticalAlignment="Top"/>
+            <Rectangle HorizontalAlignment="Left" Height="375" Margin="104,10,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="58" Margin="104,212,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="128" Margin="382,84,0,0" Stroke="Black" VerticalAlignment="Top" Width="80"/>
+            <Button x:Name="ContrabandistaItem1" Content="Item1" HorizontalAlignment="Left" Margin="190,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyContrabandistaItem"/>
+            <Button x:Name="ContrabandistaItem2" Content="Item2" HorizontalAlignment="Left" Margin="299,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyContrabandistaItem"/>
+            <Button x:Name="ContrabandistaItem3" Content="Item3" HorizontalAlignment="Left" Margin="400,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyContrabandistaItem"/>
+            <Label x:Name="ContrabandistaGoldItem1" HorizontalAlignment="Left" Margin="190,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="ContrabandistaGoldItem2" HorizontalAlignment="Left" Margin="299,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="ContrabandistaGoldItem3" HorizontalAlignment="Left" Margin="400,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Button Content="Volver atrás" HorizontalAlignment="Left" Margin="0,390,0,0" VerticalAlignment="Top" Height="44" Width="97" Click="GoToCity"/>
+        </Grid>
+        <Grid x:Name="MagicSchoolStack" Visibility="Collapsed" Margin="10">
+            <Label Content="Oro:" VerticalAlignment="Top" Margin="8,10,703,0" Height="25"/>
+            <Label x:Name="GoldTextSchool" Content="TextBox" Width="60" Height="25" Margin="39,10,701,399"/>
+
+            <Rectangle HorizontalAlignment="Left" Height="375" Margin="104,10,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="58" Margin="104,212,0,0" Stroke="Black" VerticalAlignment="Top" Width="627"/>
+            <Rectangle HorizontalAlignment="Left" Height="128" Margin="382,84,0,0" Stroke="Black" VerticalAlignment="Top" Width="80"/>
+
+            <Label Content="Escuela de Magia" HorizontalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,10,0,20"/>
+            <Button x:Name="HechizoItem1" Content="Item1" HorizontalAlignment="Left" Margin="190,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyMagicSchoolSpell"/>
+            <Button x:Name="HechizoItem2" Content="Item1" HorizontalAlignment="Left" Margin="299,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyMagicSchoolSpell"/>
+            <Button x:Name="HechizoItem3" Content="Item1" HorizontalAlignment="Left" Margin="400,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyMagicSchoolSpell"/>
+            <Button x:Name="HechizoItem4" Content="Item1" HorizontalAlignment="Left" Margin="506,170,0,0" VerticalAlignment="Top" Height="61" Width="78" Click="BuyMagicSchoolSpell"/>
+
+            <Label x:Name="HechizoGoldItem1" HorizontalAlignment="Left" Margin="190,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="HechizoGoldItem2" HorizontalAlignment="Left" Margin="299,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="HechizoGoldItem3" HorizontalAlignment="Left" Margin="400,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+            <Label x:Name="HechizoGoldItem4" HorizontalAlignment="Left" Margin="506,240,0,0" Content="TextBox" VerticalAlignment="Top" Width="78"/>
+
+            <Button Content="Volver atrás" HorizontalAlignment="Left" Margin="0,390,0,0" VerticalAlignment="Top" Height="44" Width="97" Click="GoToCity"/>
+        </Grid>
+
+
+        <Grid x:Name="TavernaStack" Visibility="Collapsed" Margin="10">
+            <Label Content="TABERNA" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Height="60" Width="157" FontSize="36"/>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="-87,318,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-32.755"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="224,226,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.033"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="530,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="35.679"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="-85,53,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-32.755"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="226,-40,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.033"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle HorizontalAlignment="Left" Height="122" Margin="532,55,0,0" Stroke="Black" VerticalAlignment="Top" Width="377" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="35.679"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Button Content="Volver atrás" HorizontalAlignment="Center" Margin="0,390,0,0" VerticalAlignment="Top" Height="47" Width="209" Click="GoToCity"/>
+            <Button Content="Todos los héroes" HorizontalAlignment="Left" Margin="306,251,0,0" VerticalAlignment="Top" Height="75" Width="202" Click="HealAllHeroesClick"/>
+            <Button Content="Seleccionar a los héroes" HorizontalAlignment="Left" Margin="592,331,0,0" VerticalAlignment="Top" Height="75" Width="202" Click="SelectHeroesClick"/>
+            <Button Content="Seleccionar equipación" HorizontalAlignment="Left" Margin="30,316,0,0" VerticalAlignment="Top" Height="75" Width="194" Click="SelectEquipmentClick"/>
+        </Grid>
+
+        <Grid x:Name="EquipacionStack" Visibility="Collapsed">
+            <Rectangle HorizontalAlignment="Center" Height="439" Stroke="Black" VerticalAlignment="Center" Width="800"/>
+            <Rectangle HorizontalAlignment="Center" Height="52" Margin="0,397,0,0" Stroke="Black" VerticalAlignment="Top" Width="800"/>
+            <Rectangle HorizontalAlignment="Center" Height="52" Margin="0,10,0,0" Stroke="Black" VerticalAlignment="Top" Width="800"/>
+
+            <Button Content="Volver Atras" HorizontalAlignment="Center" Margin="0,409,0,0" VerticalAlignment="Top" Height="40" Width="148" Click="GoToTaverna"/>
+
+            <Button Content="Siguiente" HorizontalAlignment="Left" Margin="21,409,0,0" VerticalAlignment="Top" Height="28" Width="62" Click="NextCarrousell"/>
+            <Button Content="Atras" HorizontalAlignment="Left" Margin="21,21,0,0" VerticalAlignment="Top" Height="28" Width="50" Click="PrevCarrousell"/>
+
+            <Button x:Name="NombreEquipacion1" Content="NombreEquipacion1" HorizontalAlignment="Left" Margin="21,74,0,0" VerticalAlignment="Top" Height="58" Width="91" Click="CurarEquipacion"/>
+            <Rectangle x:Name="AllEquipations1" HorizontalAlignment="Center" Height="58" Margin="0,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="776"/>
+            <Rectangle x:Name="Equipations1HeroLife1" HorizontalAlignment="Left" Height="58" Margin="694,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations1HeroLife2" HorizontalAlignment="Left" Height="58" Margin="715,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations1HeroLife3" HorizontalAlignment="Left" Height="58" Margin="736,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations1HeroLife4" HorizontalAlignment="Left" Height="58" Margin="756,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations1HeroLife5" HorizontalAlignment="Left" Height="58" Margin="776,74,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations1HeroPhoto1" HorizontalAlignment="Left" Height="58" Margin="150,75,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations1HeroPhoto2" HorizontalAlignment="Left" Height="58" Margin="251,75,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations1HeroPhoto3" HorizontalAlignment="Left" Height="58" Margin="352,75,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations1HeroPhoto4" HorizontalAlignment="Left" Height="58" Margin="453,75,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations1HeroPhoto5" HorizontalAlignment="Left" Height="58" Margin="554,75,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+
+            <Button x:Name="NombreEquipacion2" Content="NombreEquipacion2" HorizontalAlignment="Left" Margin="21,137,0,0" VerticalAlignment="Top" Height="58" Width="91" Click="CurarEquipacion"/>
+            <Rectangle x:Name="AllEquipations2" HorizontalAlignment="Center" Height="58" Margin="0,137,0,0" Stroke="Black" VerticalAlignment="Top" Width="776"/>
+            <Rectangle x:Name="Equipations2HeroLife1" HorizontalAlignment="Left" Height="58" Margin="776,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations2HeroLife2" HorizontalAlignment="Left" Height="58" Margin="756,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations2HeroLife3" HorizontalAlignment="Left" Height="58" Margin="736,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations2HeroLife4" HorizontalAlignment="Left" Height="58" Margin="715,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations2HeroLife5" HorizontalAlignment="Left" Height="58" Margin="694,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations2HeroPhoto1" HorizontalAlignment="Left" Height="58" Margin="150,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations2HeroPhoto2" HorizontalAlignment="Left" Height="58" Margin="251,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations2HeroPhoto3" HorizontalAlignment="Left" Height="58" Margin="352,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations2HeroPhoto4" HorizontalAlignment="Left" Height="58" Margin="453,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations2HeroPhoto5" HorizontalAlignment="Left" Height="58" Margin="554,138,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+
+            <Button x:Name="NombreEquipacion3" Content="NombreEquipacion3" HorizontalAlignment="Left" Margin="21,0,0,0" VerticalAlignment="Center" Height="58" Width="91" Click="CurarEquipacion"/>
+            <Rectangle x:Name="AllEquipations3" HorizontalAlignment="Center" Height="58" Stroke="Black" VerticalAlignment="Center" Width="776"/>
+            <Rectangle x:Name="Equipations3HeroLife1" HorizontalAlignment="Left" Height="58" Margin="776,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="22"/>
+            <Rectangle x:Name="Equipations3HeroLife2" HorizontalAlignment="Left" Height="58" Margin="756,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="22"/>
+            <Rectangle x:Name="Equipations3HeroLife3" HorizontalAlignment="Left" Height="58" Margin="736,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="22"/>
+            <Rectangle x:Name="Equipations3HeroLife4" HorizontalAlignment="Left" Height="58" Margin="715,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="22"/>
+            <Rectangle x:Name="Equipations3HeroLife5" HorizontalAlignment="Left" Height="58" Margin="694,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="22"/>
+            <Rectangle x:Name="Equipations3HeroPhoto1" HorizontalAlignment="Left" Height="58" Margin="150,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="101"/>
+            <Rectangle x:Name="Equipations3HeroPhoto2" HorizontalAlignment="Left" Height="58" Margin="251,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="101"/>
+            <Rectangle x:Name="Equipations3HeroPhoto3" HorizontalAlignment="Left" Height="58" Margin="352,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="101"/>
+            <Rectangle x:Name="Equipations3HeroPhoto4" HorizontalAlignment="Left" Height="58" Margin="453,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="101"/>
+            <Rectangle x:Name="Equipations3HeroPhoto5" HorizontalAlignment="Left" Height="58" Margin="554,0,0,0" Stroke="Black" VerticalAlignment="Center" Width="101"/>
+
+            <Button x:Name="NombreEquipacion4" Content="NombreEquipacion4" HorizontalAlignment="Left" Margin="21,263,0,0" VerticalAlignment="Top" Height="58" Width="91" Click="CurarEquipacion"/>
+            <Rectangle x:Name="AllEquipations4" HorizontalAlignment="Center" Height="58" Margin="0,263,0,0" Stroke="Black" VerticalAlignment="Top" Width="776"/>
+            <Rectangle x:Name="Equipations4HeroLife1" HorizontalAlignment="Left" Height="58" Margin="776,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations4HeroLife2" HorizontalAlignment="Left" Height="58" Margin="756,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations4HeroLife3" HorizontalAlignment="Left" Height="58" Margin="736,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations4HeroLife4" HorizontalAlignment="Left" Height="58" Margin="715,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations4HeroLife5" HorizontalAlignment="Left" Height="58" Margin="694,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations4HeroPhoto1" HorizontalAlignment="Left" Height="58" Margin="150,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations4HeroPhoto2" HorizontalAlignment="Left" Height="58" Margin="251,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations4HeroPhoto3" HorizontalAlignment="Left" Height="58" Margin="352,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations4HeroPhoto4" HorizontalAlignment="Left" Height="58" Margin="453,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations4HeroPhoto5" HorizontalAlignment="Left" Height="58" Margin="554,264,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+
+            <Button x:Name="NombreEquipacion5" Content="NombreEquipacion5" HorizontalAlignment="Left" Margin="21,326,0,0" VerticalAlignment="Top" Height="58" Width="91" Click="CurarEquipacion"/>
+            <Rectangle x:Name="AllEquipations5" HorizontalAlignment="Center" Height="58" Margin="0,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="776"/>
+            <Rectangle x:Name="Equipations5HeroLife1" HorizontalAlignment="Left" Height="58" Margin="776,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations5HeroLife2" HorizontalAlignment="Left" Height="58" Margin="756,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations5HeroLife3" HorizontalAlignment="Left" Height="58" Margin="736,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations5HeroLife4" HorizontalAlignment="Left" Height="58" Margin="715,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations5HeroLife5" HorizontalAlignment="Left" Height="58" Margin="694,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="22"/>
+            <Rectangle x:Name="Equipations5HeroPhoto1" HorizontalAlignment="Left" Height="58" Margin="150,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations5HeroPhoto2" HorizontalAlignment="Left" Height="58" Margin="251,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations5HeroPhoto3" HorizontalAlignment="Left" Height="58" Margin="352,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations5HeroPhoto4" HorizontalAlignment="Left" Height="58" Margin="453,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="Equipations5HeroPhoto5" HorizontalAlignment="Left" Height="58" Margin="554,326,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+        </Grid>
+        <Grid x:Name="ManualyHeroesStack" Visibility="Collapsed">
+            <Rectangle HorizontalAlignment="Center" Height="439" Stroke="Black" VerticalAlignment="Center" Width="800"/>
+            <Button Content="Volver Atras" HorizontalAlignment="Center" Margin="0,409,0,0" VerticalAlignment="Top" Height="40" Width="148" Click="GoToTaverna"/>
+            <Rectangle HorizontalAlignment="Center" Height="126" Margin="0,323,0,0" Stroke="Black" VerticalAlignment="Top" Width="800"/>
+            <Rectangle x:Name="FutureHeroeImage1" HorizontalAlignment="Left" Height="218" Margin="27,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="FutureHeroeImage2" HorizontalAlignment="Left" Height="218" Margin="157,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="FutureHeroeImage3" HorizontalAlignment="Left" Height="218" Margin="293,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="FutureHeroeImage4" HorizontalAlignment="Left" Height="218" Margin="427,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="FutureHeroeImage5" HorizontalAlignment="Left" Height="218" Margin="562,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="FutureHeroeImage6" HorizontalAlignment="Left" Height="218" Margin="693,105,0,0" Stroke="Black" VerticalAlignment="Top" Width="101"/>
+            <Rectangle x:Name="VidaHeroe1" Stroke="Black" Width="100" Margin="27,79,693,359"/>
+            <Rectangle x:Name="VidaHeroe2" Stroke="Black" Width="100" Margin="158,79,562,359"/>
+            <Rectangle x:Name="VidaHeroe3" Stroke="Black" Width="100" Margin="294,79,426,359"/>
+            <Rectangle x:Name="VidaHeroe4" Stroke="Black" Width="100" Margin="428,79,292,359"/>
+            <Rectangle x:Name="VidaHeroe5" Stroke="Black" Width="100" Margin="562,79,158,359"/>
+            <Rectangle x:Name="VidaHeroe6" Stroke="Black" Width="100" Margin="693,79,27,359"/>
+            <Button x:Name="NombreHeroe1" Content="NombreHeroe1" HorizontalAlignment="Left" Margin="27,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button x:Name="NombreHeroe2" Content="NombreHeroe2" HorizontalAlignment="Left" Margin="157,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button x:Name="NombreHeroe3" Content="NombreHeroe3" HorizontalAlignment="Left" Margin="294,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button x:Name="NombreHeroe4" Content="NombreHeroe4" HorizontalAlignment="Left" Margin="428,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button x:Name="NombreHeroe5" Content="NombreHeroe5" HorizontalAlignment="Left" Margin="563,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button x:Name="NombreHeroe6" Content="NombreHeroe6" HorizontalAlignment="Left" Margin="694,328,0,0" VerticalAlignment="Top" Height="28" Width="100" Click="CurarHeroe"/>
+            <Button Content="Siguiente" HorizontalAlignment="Left" Margin="732,390,0,0" VerticalAlignment="Top" Height="28" Width="62" Click="NextCarrousell"/>
+            <Button Content="Atras" HorizontalAlignment="Left" Margin="28,386,0,0" VerticalAlignment="Top" Height="28" Width="50" Click="PrevCarrousell"/>
+        </Grid>
+    </Grid>
+</Window>
